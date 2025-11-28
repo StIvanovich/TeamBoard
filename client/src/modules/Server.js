@@ -1,26 +1,30 @@
+import { useContext } from "react";
 import { io } from "socket.io-client";
+import { MediatorContext } from "../App";
 
 export default class Server {
-    constructor(HOST) {
+    constructor(HOST, mediator) {
         const socket = io(HOST);
         this.socket = socket;
+        this.mediator = mediator;
 
         this.socket.on("connect", () => {
             this.socket.on("LOGIN", (data) => {
-                console.log(data);
-                // const result = this._validate(data);
-                // if (result) {
-                //     this.token = result.token;
-                //     const { LOGIN } = this.mediator.getEventTypes();
-                //     this.mediator.call(LOGIN, result);
-                // }
+                const result = this._validate(data);
+                if (result) {
+                    this.token = result.token;
+                    const { LOGIN } = this.mediator.getEventTypes();
+                    this.mediator.call(LOGIN, result);
+                }
             });
 
             this.socket.on("SIGNUP", (data) => {
                 const result = this._validate(data);
+                const test = mediator.getEventTypes();
+
                 if (result) {
                     const { SIGNUP } = this.mediator.getEventTypes();
-                    this.mediator.call < Array < TMessage >> SIGNUP;
+                    this.mediator.call(SIGNUP);
                 }
             });
             this.socket.on("LOGOUT", (data) => {
@@ -31,6 +35,12 @@ export default class Server {
                 }
             });
         });
+    }
+    _validate(data) {
+        if (data.result === "ok") {
+            return data.data || null;
+        }
+        return null;
     }
     login(login, hash, rnd) {
         this.socket.emit("LOGIN", { login, hash, rnd });

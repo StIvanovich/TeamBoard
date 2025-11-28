@@ -7,7 +7,6 @@ import "../SingUp/SignUp.css";
 const SignUp = ({ epages }) => {
     const mediator = useContext(MediatorContext);
     const server = useContext(ServerContext);
-
     const loginRef = useRef(null);
     const nickRef = useRef(null);
     const passwordRef = useRef(null);
@@ -17,7 +16,7 @@ const SignUp = ({ epages }) => {
         const login = loginRef.current.value;
         const nickname = nickRef.current.value;
         //        const hash = md5(login + passwordRef.current.value);
-        const hash = 1;
+        const hash = login + passwordRef.current.value;
         //const verifyHash = md5(login + verifyRef.current.value);
 
         const verifyHash = login + verifyRef.current.value;
@@ -30,6 +29,8 @@ const SignUp = ({ epages }) => {
         const { SERVER_ERROR } = mediator.getEventTypes();
 
         const signUpHandler = () => {
+            console.log(11111111111111111111111111111111111111111111111);
+            /////////НАстроить epagess
             epages(EPAGES.LOGIN);
         };
 

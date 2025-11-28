@@ -45,6 +45,7 @@ class DB {
     }
 
     addUser(login, name, password) {
+        console.log(login, name, password, 10000);
         return this.orm.insert("users", { login, name, password });
     }
 }

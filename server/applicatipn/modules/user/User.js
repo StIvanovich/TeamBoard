@@ -44,6 +44,7 @@ class User {
     async signUp(login, nickname, hash, verifyHash) {
         const user = await this.db.getUserByLogin(login);
         if (!user) {
+            console.log(this.db);
             await this.db.addUser(login, nickname, hash);
             return {
                 login,
@@ -51,7 +52,7 @@ class User {
             };
         }
 
-        return null;
+        return user;
     }
 
     async logout(token) {

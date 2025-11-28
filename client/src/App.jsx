@@ -5,6 +5,7 @@ import "./App.css";
 import Server from "./modules/Server";
 import SignUp from "./components/SingUp/SignUp";
 import Mediator from "./modules/Mediator";
+import Login from "./components/Login/Login";
 
 const MEDIATOR = {
     EVENTS: {
@@ -36,17 +37,18 @@ export const EPAGES = {
 console.log(EPAGES);
 
 function App() {
-    const [epages, setEpages] = useState(EPAGES.LOGIN);
+    const [epages, setEpages] = useState(EPAGES.SIGNUP, EPAGES.LOGIN);
 
-    const server = new Server(HOST);
     const mediator = new Mediator(MEDIATOR);
+    const server = new Server(HOST, mediator);
+    ////if
+    epages === EPAGES.SIGNUP ? <SignUp epages={setEpages} /> : epages === EPAGES.LOGIN ? <Login epages={setEpages} /> : <></>;
 
     return (
         <>
-            <button onClick={() => server.login(1, 1, 1)}>clickme</button>
             <MediatorContext.Provider value={mediator}>
                 <ServerContext.Provider value={server}>
-                    <SignUp epages={setEpages} />
+                    {epages === EPAGES.SIGNUP ? <SignUp epages={setEpages} /> : epages === EPAGES.LOGIN ? <Login epages={setEpages} /> : <></>}
                 </ServerContext.Provider>
             </MediatorContext.Provider>
         </>

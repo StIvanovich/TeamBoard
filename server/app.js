@@ -29,7 +29,9 @@ new UserManager(answer, db, io);
 // })();
 
 io.on("connection", (socket) => {
-    socket.on("LOGIN", (data) => {});
+    socket.on("LOGIN", (data) => {
+        console.log(data);
+    });
 });
 app.get("/api/test", (req, res) => {
     res.json({
