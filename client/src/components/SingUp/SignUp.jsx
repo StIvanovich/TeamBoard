@@ -1,6 +1,7 @@
 import React, { useContext, useEffect, useRef, useState } from "react";
-//import { EPAGES, ServerContext, MediatorContext } from "../../App";
-
+import { EPAGES, ServerContext, MediatorContext } from "../../App";
+import logo from "../SingUp/image/logo.jpg";
+import "../SingUp/SignUp.css";
 //import md5 from "md5";
 
 const SignUp = ({ epages }) => {
@@ -17,7 +18,9 @@ const SignUp = ({ epages }) => {
         const nickname = nickRef.current.value;
         //        const hash = md5(login + passwordRef.current.value);
         const hash = 1;
-        const verifyHash = md5(login + verifyRef.current.value);
+        //const verifyHash = md5(login + verifyRef.current.value);
+
+        const verifyHash = login + verifyRef.current.value;
 
         server.signUp(login, nickname, hash, verifyHash);
     };
@@ -44,9 +47,9 @@ const SignUp = ({ epages }) => {
 
     return (
         <div className="container-SignUp" id="test-container-SignUp">
-            <img className="logo-SignUp" src={logo} id="test-logo-SignUp" />
+            <img className="logo-SignUp" src={logo} alt="Логотип" id="test-logo-SignUp" />
             <div className="text-SignUp" id="test-text-SignUp">
-                СОЗДАТЬ УЧЕТНУЮ ЗАПИСЬ
+                Team Board
             </div>
             <div className="form-SignUp">
                 <div className="text-register" id="test-text-register">
@@ -54,17 +57,14 @@ const SignUp = ({ epages }) => {
                 </div>
                 <input ref={loginRef} className="input-SignUp" placeholder="Логин" id="test-input-login" />
                 <input ref={nickRef} className="input-SignUp" placeholder="Никнейм" id="test-input-nick" />
-                <input ref={passwordRef} className="input-SignUp" placeholder="Пароль" id="test-input-password" />
-                <input ref={verifyRef} className="input-SignUp" placeholder="Подтвердите пароль" id="test-input-verify" />
+                <input ref={passwordRef} type="password" className="input-SignUp" placeholder="Пароль" id="test-input-password" />
+                <input ref={verifyRef} type="password" className="input-SignUp" placeholder="Подтвердите пароль" id="test-input-verify" />
                 <button onClick={clickHandler} className="reg-button" id="test-reg-button">
                     Регистрация
                 </button>
-                <br />
-                <br />
-                <br />
                 <hr className="hr-SingUp" id="test-hr-SingUp" />
                 <div className="estakk" id="test-estakk" onClick={() => epages(EPAGES.LOGIN)}>
-                    Уже есть аккаунт
+                    Уже есть аккаунт?
                 </div>
             </div>
         </div>
