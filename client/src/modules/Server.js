@@ -10,22 +10,26 @@ export default class Server {
 
         this.socket.on("connect", () => {
             this.socket.on("LOGIN", (data) => {
+                console.log(data);
                 const result = this._validate(data);
+                const { LOGIN, SERVER_ERROR } = this.mediator.getEventTypes();
                 if (result) {
                     this.token = result.token;
-                    const { LOGIN } = this.mediator.getEventTypes();
                     this.mediator.call(LOGIN, result);
+                    return;
                 }
+                this.mediator.call(SERVER_ERROR, data.error);
             });
 
             this.socket.on("SIGNUP", (data) => {
                 const result = this._validate(data);
-                const test = mediator.getEventTypes();
+                const { SIGNUP, SERVER_ERROR } = this.mediator.getEventTypes();
 
                 if (result) {
-                    const { SIGNUP } = this.mediator.getEventTypes();
                     this.mediator.call(SIGNUP);
+                    return;
                 }
+                this.mediator.call(SERVER_ERROR, data.error);
             });
             this.socket.on("LOGOUT", (data) => {
                 const result = this._validate(data);

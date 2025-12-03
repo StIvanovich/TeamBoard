@@ -6,6 +6,7 @@ import Server from "./modules/Server";
 import SignUp from "./components/SingUp/SignUp";
 import Mediator from "./modules/Mediator";
 import Login from "./components/Login/Login";
+import Menu from "./components/Menu/Menu";
 
 const MEDIATOR = {
     EVENTS: {
@@ -33,22 +34,22 @@ const HOST = "localhost:5000";
 export const EPAGES = {
     LOGIN: 0,
     SIGNUP: 1,
+    MENU: 2,
 };
-console.log(EPAGES);
 
 function App() {
-    const [epages, setEpages] = useState(EPAGES.SIGNUP, EPAGES.LOGIN);
+    const [epages, setEpages] = useState(EPAGES.SIGNUP);
 
     const mediator = new Mediator(MEDIATOR);
     const server = new Server(HOST, mediator);
     ////if
-    epages === EPAGES.SIGNUP ? <SignUp epages={setEpages} /> : epages === EPAGES.LOGIN ? <Login epages={setEpages} /> : <></>;
+    //epages === EPAGES.SIGNUP ? <SignUp epages={setEpages} /> : epages === EPAGES.LOGIN ? <Login epages={setEpages} /> : <></>;
 
     return (
         <>
             <MediatorContext.Provider value={mediator}>
                 <ServerContext.Provider value={server}>
-                    {epages === EPAGES.SIGNUP ? <SignUp epages={setEpages} /> : epages === EPAGES.LOGIN ? <Login epages={setEpages} /> : <></>}
+                    {epages === EPAGES.SIGNUP ? <SignUp epages={setEpages} /> : epages === EPAGES.LOGIN ? <Login epages={setEpages} /> : epages === EPAGES.MENU ? <Menu /> : <></>}
                 </ServerContext.Provider>
             </MediatorContext.Provider>
         </>

@@ -23,16 +23,7 @@ const io = socketIo(server, {
 const answer = new Answer();
 const db = new DB();
 new UserManager(answer, db, io);
-// (async () => {
-//     const a = await db.test();
-//     console.log(a);
-// })();
 
-io.on("connection", (socket) => {
-    socket.on("LOGIN", (data) => {
-        console.log(data);
-    });
-});
 app.get("/api/test", (req, res) => {
     res.json({
         users: [

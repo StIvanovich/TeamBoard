@@ -11,13 +11,17 @@ const Login = ({ epages }) => {
     const passwordRef = useRef(null);
 
     const [error, setError] = useState(null);
+    console.log(error);
 
     const clickHandler = async () => {
         setError(null);
         const login = loginRef.current.value;
         const password = passwordRef.current.value;
         const rnd = Math.round(Math.random() * 1000000);
-        const hash = md5(md5(login + password) + rnd);
+
+        //const hash = md5(md5(login + password) + rnd);
+        const hash = login + password + rnd;
+
         server.login(login, hash, rnd);
         const { PLAY_MUSIC } = mediator.getEventTypes();
         mediator.call(PLAY_MUSIC);
@@ -28,10 +32,10 @@ const Login = ({ epages }) => {
         const { SERVER_ERROR } = mediator.getEventTypes();
 
         const loginHandler = () => {
-            server.getFriends();
             epages(EPAGES.MENU);
         };
         const serverErrorHandler = (error) => {
+            console.log(error);
             setError(error);
         };
 
@@ -78,6 +82,14 @@ const Login = ({ epages }) => {
                     </button>
                 </div>
             </div>
+            {error ? (
+                <div>
+                    <span>{error.code}:</span>
+                    <span>{error.text}</span>
+                </div>
+            ) : (
+                ""
+            )}
         </div>
     );
 };

@@ -82,7 +82,6 @@ class ORM {
          (${keys2.join(`, `)})
          VALUES (${keys.join(`, `)})
     `;
-        console.log(query, values, 11111111);
         return await this.db.query(query, values);
     }
 

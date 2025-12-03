@@ -36,13 +36,13 @@ class UserManager {
             const data = await user.login(login, hash, rnd, socketId);
             if (data) {
                 this.io.to(socketId).emit("LOGIN", this.answer.good(data));
-                this.io.to(socketId).emit("GET_USER", this.answer.good(data));
+                //this.io.to(socketId).emit("GET_USER", this.answer.good(data));
                 return;
             }
-            this.io.to(socketId).emit("LOGIN", this.answer.bad());
+            this.io.to(socketId).emit("LOGIN", this.answer.bad(1000));
             return;
         }
-        this.io.to(socketId).emit("LOGIN", this.answer.bad());
+        this.io.to(socketId).emit("LOGIN", this.answer.bad(488));
     }
 
     async signUp({ login, nickname, hash, verifyHash }, socketId) {

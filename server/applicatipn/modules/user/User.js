@@ -29,11 +29,13 @@ class User {
         const user = await this.db.getUserByLogin(login);
         if (user) {
             //const hashS = md5(user.password + rnd);
-            const hashS = 1;
+            const hashS = user.password + rnd;
 
             if (hash === hashS) {
                 //const token = md5(hash + Math.random());
-                const token = 1;
+
+                const token = hash + Math.random();
+                //const token = 1;
                 this.db.updateToken(user.id, token);
                 this._includeData({ name: user.name, token, id: user.id }, socketId);
                 return this.get();
@@ -44,7 +46,6 @@ class User {
     async signUp(login, nickname, hash, verifyHash) {
         const user = await this.db.getUserByLogin(login);
         if (!user) {
-            console.log(this.db);
             await this.db.addUser(login, nickname, hash);
             return {
                 login,

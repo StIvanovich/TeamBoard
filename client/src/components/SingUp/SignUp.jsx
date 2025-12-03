@@ -12,6 +12,8 @@ const SignUp = ({ epages }) => {
     const passwordRef = useRef(null);
     const verifyRef = useRef(null);
 
+    const [error, setError] = useState(null);
+
     const clickHandler = async () => {
         const login = loginRef.current.value;
         const nickname = nickRef.current.value;
@@ -29,12 +31,11 @@ const SignUp = ({ epages }) => {
         const { SERVER_ERROR } = mediator.getEventTypes();
 
         const signUpHandler = () => {
-            console.log(11111111111111111111111111111111111111111111111);
-            /////////НАстроить epagess
             epages(EPAGES.LOGIN);
         };
 
         const serverErrorHandler = (error) => {
+            console.log(error);
             setError(error);
         };
         mediator.subscribe(SIGNUP, signUpHandler);
@@ -68,6 +69,14 @@ const SignUp = ({ epages }) => {
                     Уже есть аккаунт?
                 </div>
             </div>
+            {error ? (
+                <div>
+                    <span>{error.code}:</span>
+                    <span>{error.text}</span>
+                </div>
+            ) : (
+                ""
+            )}
         </div>
     );
 };
