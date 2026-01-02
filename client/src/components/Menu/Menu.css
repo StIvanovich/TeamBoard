@@ -1,0 +1,220 @@
+/* Сброс и базовые настройки */
+* {
+    box-sizing: border-box;
+}
+
+.mainMenu {
+    position: relative;
+    min-height: 100vh;
+    width: 100vw;
+    background: linear-gradient(135deg, #f0f4ff 0%, #e6eaff 100%);
+    padding: 20px;
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    overflow: hidden;
+}
+
+/* Логотип */
+.photo-button {
+    width: 100px;
+    height: auto;
+    display: block;
+    margin: 30px auto 40px;
+}
+
+/* Контейнер основных кнопок */
+.buttons-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
+    margin-bottom: 50px;
+}
+
+.button1,
+.button2,
+.button3 {
+    width: 280px;
+    padding: 16px 24px;
+    background: white;
+    border: 2px solid #4a6cf7;
+    border-radius: 12px;
+    font-size: 18px;
+    font-weight: 600;
+    color: #4a6cf7;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    user-select: none;
+}
+
+.button1:hover,
+.button2:hover,
+.button3:hover {
+    background: #4a6cf7;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(74, 108, 247, 0.3);
+}
+
+.button1:active,
+.button2:active,
+.button3:active {
+    transform: translateY(0);
+}
+
+/* Панель профиля (правая часть) */
+.profile-panel {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    width: 240px;
+    background: white;
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+}
+
+.user-profile {
+    width: 60px;
+    height: 60px;
+    background: #4a6cf7;
+    border-radius: 50%;
+    margin: 0 auto 16px;
+}
+
+.hr-user-profile1,
+.hr-user-profile2 {
+    border: none;
+    height: 1px;
+    background: #e0e0e0;
+    margin: 16px 0;
+}
+
+.text-button,
+.text-Invitation {
+    font-weight: 600;
+    color: #222;
+    margin-bottom: 12px;
+    position: relative;
+}
+
+/* Кнопка "Добавить друга" (иконка) */
+.new-profile-button {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 24px;
+    height: 24px;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%234a6cf7' d='M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z'/%3E%3C/svg%3E") no-repeat
+        center;
+    background-size: contain;
+    cursor: pointer;
+    margin-top: 2px;
+}
+
+/* Форма добавления друга */
+#test-new-profile {
+    margin-top: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.add-friend {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 14px;
+}
+
+.add-friend-button {
+    padding: 6px 12px;
+    background: #4a6cf7;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.add-friend-button:hover {
+    background: #3a5be0;
+}
+
+/* Список друзей */
+.your-friend-menu {
+    margin-top: 16px;
+    max-height: 120px;
+    overflow-y: auto;
+    padding-right: 4px;
+}
+
+.your-friend {
+    padding: 6px 0;
+    font-size: 14px;
+    color: #444;
+    word-break: break-word;
+}
+
+/* Приглашения (абсолютный блок) */
+/* Уже задан через inline-style, но можно донастроить */
+.your-friend {
+    font-size: 13px;
+    margin-right: 8px;
+    flex: 1;
+}
+
+.toaccept,
+.deny {
+    width: 24px;
+    height: 24px;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    margin-left: 6px;
+}
+
+.toaccept {
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%232e7d32' d='M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z'/%3E%3C/svg%3E")
+        no-repeat center;
+    background-size: 16px;
+}
+
+.deny {
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23d32f2f' d='M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z'/%3E%3C/svg%3E")
+        no-repeat center;
+    background-size: 16px;
+}
+
+/* Кнопка смены аккаунта */
+.button-account {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 10px 20px;
+    background: #f5f5f5;
+    color: #333;
+    border: 1px solid #ccc;
+    border-radius: 20px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.button-account:hover {
+    background: #e0e0e0;
+}
+
+/* Скроллбар (опционально, для красоты) */
+.your-friend-menu::-webkit-scrollbar,
+[class*="absolute"]::-webkit-scrollbar {
+    width: 6px;
+}
+.your-friend-menu::-webkit-scrollbar-thumb,
+[class*="absolute"]::-webkit-scrollbar-thumb {
+    background: #c0c0c0;
+    border-radius: 3px;
+}

@@ -49,7 +49,6 @@ const SignUp = ({ epages }) => {
 
     return (
         <div className="container-SignUp" id="test-container-SignUp">
-            <img className="logo-SignUp" src={logo} alt="Логотип" id="test-logo-SignUp" />
             <div className="text-SignUp" id="test-text-SignUp">
                 Team Board
             </div>
