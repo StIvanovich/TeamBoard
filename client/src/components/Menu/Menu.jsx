@@ -12,7 +12,8 @@ const Menu = ({ epages }) => {
     const [friends, setFriends] = useState([{ id: 0, name: "У Вас нет друзей!" }]);
     const [invites, setInvites] = useState(null);
     const [showIdInput, setShowIdInput] = useState(false);
-    const [showWhiteboard, setShowWhiteboard] = useState(false);
+    const [boards, setBoards] = useState([]);
+    const [currentBoardData, setCurrentBoardData] = useState(null);
 
     const clickHandler = () => {
         const id = idRef.current?.value?.trim();
@@ -26,33 +27,59 @@ const Menu = ({ epages }) => {
         setShowIdInput((prev) => !prev);
     };
 
+    const createNewBoard = () => {
+        console.log("📌 Токен при создании доски:", server.token);
+        server.createBoard("Новая доска");
+    };
+
+    const openBoard = (boardId) => {
+        server.loadBoard(boardId);
+    };
+
     useEffect(() => {
-        const { GET_INVITES, GET_FRIENDS, LOGOUT } = mediator.getEventTypes();
+        const { GET_INVITES, GET_FRIENDS, LOGOUT, LOAD_BOARDS, LOAD_BOARD, CREATE_BOARD } = mediator.getEventTypes();
 
         const getInvitesHandler = (data) => setInvites(data);
         const getFriendsHandler = (data) => setFriends(data);
         const logoutHandler = () => {
-            setShowWhiteboard(false);
+            setCurrentBoardData(null);
             epages(EPAGES.LOGIN);
+        };
+        const loadBoardsHandler = (data) => {
+            setBoards(data || []);
+        };
+        const loadBoardHandler = (data) => {
+            setCurrentBoardData({
+                id: data.board_id,
+                canvasData: data.canvas_data,
+                stickers: JSON.parse(data.stickers || "[]"),
+            });
+        };
+        const createBoardHandler = () => {
+            server.loadBoards();
         };
 
         mediator.subscribe(GET_FRIENDS, getFriendsHandler);
         mediator.subscribe(GET_INVITES, getInvitesHandler);
         mediator.subscribe(LOGOUT, logoutHandler);
+        mediator.subscribe(LOAD_BOARDS, loadBoardsHandler);
+        mediator.subscribe(LOAD_BOARD, loadBoardHandler);
+        mediator.subscribe(CREATE_BOARD, createBoardHandler);
+
+        server.loadBoards();
 
         return () => {
             mediator.unsubscribe(GET_FRIENDS, getFriendsHandler);
             mediator.unsubscribe(GET_INVITES, getInvitesHandler);
             mediator.unsubscribe(LOGOUT, logoutHandler);
+            mediator.unsubscribe(LOAD_BOARDS, loadBoardsHandler);
+            mediator.unsubscribe(LOAD_BOARD, loadBoardHandler);
+            mediator.unsubscribe(CREATE_BOARD, createBoardHandler);
         };
-    }, [mediator, epages]);
+    }, [mediator, epages, server, server.token]);
 
-    const lobbyHandler = () => {
-        setShowWhiteboard(true);
-    };
-
-    if (showWhiteboard) {
-        return <Whiteboard onBack={() => setShowWhiteboard(false)} />;
+    if (currentBoardData) {
+        return <Whiteboard onBack={() => setCurrentBoardData(null)} initialBoardId={currentBoardData.id} initialCanvasData={currentBoardData.canvasData} initialStickers={currentBoardData.stickers} />;
     }
 
     return (
@@ -60,10 +87,10 @@ const Menu = ({ epages }) => {
             <img className="photo-button" src={logo} id="test-logo" alt="Логотип" />
 
             <div className="buttons-container">
-                <div onClick={lobbyHandler} className="button1" id="test-play">
+                <div onClick={createNewBoard} className="button1" id="test-play">
                     Создать Доску
                 </div>
-                <div onClick={() => epages(EPAGES.HEROES)} className="button2" id="test-heroes">
+                <div onClick={() => server.loadBoards()} className="button2" id="test-heroes">
                     Список доступных досок
                 </div>
                 <div onClick={() => epages(EPAGES.PARAMETERS)} className="button3" id="test-settings">
@@ -74,6 +101,33 @@ const Menu = ({ epages }) => {
             <div className="profile-panel" id="test-profile">
                 <div className="user-profile" id="test-user"></div>
                 <hr className="hr-user-profile1" id="test-hr1" />
+
+                <div className="text-button" id="test-friends">
+                    Мои доски
+                    <div style={{ marginTop: "8px", maxHeight: "150px", overflowY: "auto" }}>
+                        {boards.length > 0 ? (
+                            boards.map((board) => (
+                                <div
+                                    key={board.id}
+                                    onClick={() => openBoard(board.id)}
+                                    style={{
+                                        padding: "4px 8px",
+                                        margin: "2px 0",
+                                        backgroundColor: "#f0f0f0",
+                                        borderRadius: "4px",
+                                        cursor: "pointer",
+                                    }}
+                                >
+                                    {board.name || `Доска #${board.id}`}
+                                </div>
+                            ))
+                        ) : (
+                            <div style={{ color: "#888", fontSize: "14px" }}>Нет сохранённых досок</div>
+                        )}
+                    </div>
+                </div>
+
+                <hr className="hr-user-profile1" id="test-hr1-friends" />
 
                 <div className="text-button" id="test-friends">
                     Друзья

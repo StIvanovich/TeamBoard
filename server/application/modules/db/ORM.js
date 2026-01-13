@@ -67,22 +67,26 @@ class ORM {
         this.db.query(query, values);
     }
 
-    async insert(table, params = {}) {
-        const keys = [];
-        const keys2 = [];
-        const values = [];
+    async insert(table, params = {}, upsertClause = "") {
+        const keys = Object.keys(params);
+        if (keys.length === 0) throw new Error("Нет данных для вставки");
 
-        Object.keys(params).forEach((key, index) => {
-            keys.push(`$${index + 1}`);
-            keys2.push(key);
-            values.push(params[key]);
-        });
-        const query = `
-        INSERT INTO ${table} 
-         (${keys2.join(`, `)})
-         VALUES (${keys.join(`, `)})
+        const values = keys.map((key) => params[key]);
+        const placeholders = keys.map((_, i) => `$${i + 1}`).join(", ");
+
+        let query = `
+        INSERT INTO ${table} (${keys.join(", ")})
+        VALUES (${placeholders})
     `;
-        return await this.db.query(query, values);
+
+        if (upsertClause) {
+            query += ` ${upsertClause}`;
+        }
+
+        query += " RETURNING *;";
+
+        const res = await this.db.query(query, values);
+        return res;
     }
 
     delete(table) {

@@ -47,6 +47,34 @@ class DB {
     addUser(login, name, password) {
         return this.orm.insert("users", { login, name, password });
     }
+
+    getBoardsByUserId(userId) {
+        return this.orm.all("boards", { owner_id: userId }, "id, name, created_at", true);
+    }
+
+    // Создать доску
+    async createBoard(ownerId, name = "Новая доска") {
+        const result = await this.orm.insert("boards", { owner_id: ownerId, name });
+        // Добавьте RETURNING id
+        return result; // Убедитесь, что ORM возвращает данные
+    }
+    // Сохранить данные доски
+    saveBoardData(boardId, canvasData, stickers) {
+        return this.orm.insert(
+            "board_data",
+            {
+                board_id: boardId,
+                canvas_data: canvasData,
+                stickers: JSON.stringify(stickers),
+            },
+            "ON CONFLICT (board_id) DO UPDATE SET canvas_data = EXCLUDED.canvas_data, stickers = EXCLUDED.stickers, updated_at = NOW()"
+        );
+    }
+
+    // Загрузить данные доски
+    getBoardData(boardId) {
+        return this.orm.get("board_data", { board_id: boardId });
+    }
 }
 
 module.exports = DB;

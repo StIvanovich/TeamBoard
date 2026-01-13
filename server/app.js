@@ -2,9 +2,9 @@ const express = require("express");
 const http = require("http");
 const socketIo = require("socket.io");
 const cors = require("cors");
-const DB = require("./applicatipn/modules/db/DB");
-const Answer = require("./applicatipn/modules/Answer/Answer");
-const UserManager = require("./applicatipn/modules/user/UserManager");
+const DB = require("./application/modules/db/DB");
+const Answer = require("./application/modules/Answer/Answer");
+const UserManager = require("./application/modules/user/UserManager");
 
 const app = express();
 const server = http.createServer(app);

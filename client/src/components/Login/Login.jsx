@@ -15,14 +15,15 @@ const Login = ({ epages }) => {
 
     const clickHandler = async () => {
         setError(null);
-        const login = loginRef.current.value;
+        const login = loginRef.current.value.trim();
         const password = passwordRef.current.value;
-        const rnd = Math.round(Math.random() * 1000000);
 
-        //const hash = md5(md5(login + password) + rnd);
-        const hash = login + password + rnd;
+        if (!login || !password) {
+            setError({ code: 1012, text: "Введите логин и пароль" });
+            return;
+        }
 
-        server.login(login, hash, rnd);
+        server.login(login, password);
         const { PLAY_MUSIC } = mediator.getEventTypes();
         mediator.call(PLAY_MUSIC);
     };

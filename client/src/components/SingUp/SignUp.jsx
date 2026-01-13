@@ -15,15 +15,23 @@ const SignUp = ({ epages }) => {
     const [error, setError] = useState(null);
 
     const clickHandler = async () => {
-        const login = loginRef.current.value;
-        const nickname = nickRef.current.value;
-        //        const hash = md5(login + passwordRef.current.value);
-        const hash = login + passwordRef.current.value;
-        //const verifyHash = md5(login + verifyRef.current.value);
+        setError(null);
+        const login = loginRef.current.value.trim();
+        const nickname = nickRef.current.value.trim();
+        const password = passwordRef.current.value;
+        const verify = verifyRef.current.value;
 
-        const verifyHash = login + verifyRef.current.value;
+        if (!login || !nickname || !password || !verify) {
+            setError({ code: 1001, text: "Заполните все поля" });
+            return;
+        }
 
-        server.signUp(login, nickname, hash, verifyHash);
+        if (password !== verify) {
+            setError({ code: 1502, text: "Пароли не совпадают" });
+            return;
+        }
+
+        server.signUp(login, nickname, password);
     };
 
     useEffect(() => {

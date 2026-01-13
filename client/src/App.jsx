@@ -1,6 +1,4 @@
-import React, { useState } from "react";
-import reactLogo from "./assets/react.svg";
-import viteLogo from "/vite.svg";
+import React, { useState, useMemo } from "react";
 import "./App.css";
 import Server from "./modules/Server";
 import SignUp from "./components/SingUp/SignUp";
@@ -17,12 +15,13 @@ const MEDIATOR = {
         GET_GAMERS: "GET_GAMERS",
         GET_FRIENDS: "GET_FRIENDS",
         GET_INVITES: "GET_INVITES",
+        CREATE_BOARD: "CREATE_BOARD",
+        SAVE_BOARD: "SAVE_BOARD",
+        LOAD_BOARDS: "LOAD_BOARDS",
+        LOAD_BOARD: "LOAD_BOARD",
         LOGIN: "LOGIN",
         SIGNUP: "SIGNUP",
         LOGOUT: "LOGOUT",
-        GET_MOBS: "GET_MOBS",
-        GET_ERROR: "GET_ERROR",
-        UPDATE_ARR_BULLET_TRAJECTORY: "UPDATE_ARR_BULLET_TRAJECTORY",
     },
     TRIGGERS: {},
 };
@@ -40,16 +39,16 @@ export const EPAGES = {
 function App() {
     const [epages, setEpages] = useState(EPAGES.SIGNUP);
 
-    const mediator = new Mediator(MEDIATOR);
-    const server = new Server(HOST, mediator);
+    // Создаём Mediator и Server только один раз
+    const mediator = useMemo(() => new Mediator(MEDIATOR), []);
+    const server = useMemo(() => new Server(HOST, mediator), [mediator]);
+
     return (
-        <>
-            <MediatorContext.Provider value={mediator}>
-                <ServerContext.Provider value={server}>
-                    {epages === EPAGES.SIGNUP ? <SignUp epages={setEpages} /> : epages === EPAGES.LOGIN ? <Login epages={setEpages} /> : epages === EPAGES.MENU ? <Menu /> : <></>}
-                </ServerContext.Provider>
-            </MediatorContext.Provider>
-        </>
+        <MediatorContext.Provider value={mediator}>
+            <ServerContext.Provider value={server}>
+                {epages === EPAGES.SIGNUP ? <SignUp epages={setEpages} /> : epages === EPAGES.LOGIN ? <Login epages={setEpages} /> : epages === EPAGES.MENU ? <Menu /> : <></>}
+            </ServerContext.Provider>
+        </MediatorContext.Provider>
     );
 }
 
