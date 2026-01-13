@@ -42,9 +42,6 @@ function App() {
 
     const mediator = new Mediator(MEDIATOR);
     const server = new Server(HOST, mediator);
-    ////if
-    //epages === EPAGES.SIGNUP ? <SignUp epages={setEpages} /> : epages === EPAGES.LOGIN ? <Login epages={setEpages} /> : <></>;
-
     return (
         <>
             <MediatorContext.Provider value={mediator}>

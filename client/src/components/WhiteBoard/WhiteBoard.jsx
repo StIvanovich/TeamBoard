@@ -1,12 +1,11 @@
-// src/components/Whiteboard/Whiteboard.jsx
-import React, { useState, useRef } from "react";
+import React, { useState } from "react";
 import DrawingCanvas from "./DrawingCanvas";
 import StickyNote from "./StickyNote";
 import "./Whiteboard.css";
 
 const Whiteboard = ({ onBack }) => {
     const [stickers, setStickers] = useState([]);
-    const canvasRef = useRef(null);
+    const [brushColor, setBrushColor] = useState("#000000");
 
     const addSticker = () => {
         const id = Date.now();
@@ -15,6 +14,10 @@ const Whiteboard = ({ onBack }) => {
 
     const updateStickerText = (id, text) => {
         setStickers((prev) => prev.map((sticker) => (sticker.id === id ? { ...sticker, text } : sticker)));
+    };
+
+    const updateStickerPosition = (id, x, y) => {
+        setStickers((prev) => prev.map((sticker) => (sticker.id === id ? { ...sticker, x, y } : sticker)));
     };
 
     const deleteSticker = (id) => {
@@ -30,13 +33,21 @@ const Whiteboard = ({ onBack }) => {
                 <button className="add-sticker-btn" onClick={addSticker}>
                     + Стикер
                 </button>
+                <input type="color" value={brushColor} onChange={(e) => setBrushColor(e.target.value)} className="color-picker-input" />
             </div>
-
             <div className="whiteboard-content">
-                <DrawingCanvas ref={canvasRef} />
-
+                <DrawingCanvas brushColor={brushColor} />
                 {stickers.map((sticker) => (
-                    <StickyNote key={sticker.id} id={sticker.id} x={sticker.x} y={sticker.y} text={sticker.text} onUpdateText={updateStickerText} onDelete={deleteSticker} />
+                    <StickyNote
+                        key={sticker.id}
+                        id={sticker.id}
+                        x={sticker.x}
+                        y={sticker.y}
+                        text={sticker.text}
+                        onUpdateText={updateStickerText}
+                        onUpdatePosition={updateStickerPosition}
+                        onDelete={deleteSticker}
+                    />
                 ))}
             </div>
         </div>

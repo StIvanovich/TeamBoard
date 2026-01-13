@@ -1,7 +1,6 @@
-// src/components/Whiteboard/DrawingCanvas.jsx
 import React, { forwardRef, useEffect, useRef } from "react";
 
-const DrawingCanvas = forwardRef((_, canvasRef) => {
+const DrawingCanvas = forwardRef(({ brushColor }, canvasRef) => {
     const internalRef = useRef(null);
     const contextRef = useRef(null);
     const isDrawingRef = useRef(false);
@@ -10,10 +9,9 @@ const DrawingCanvas = forwardRef((_, canvasRef) => {
         const canvas = internalRef.current;
         if (!canvas) return;
 
-        // Устанавливаем размер канваса = размеру экрана
         const setCanvasSize = () => {
             canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight - 80; // минус высота хедера
+            canvas.height = window.innerHeight - 80;
         };
         setCanvasSize();
         window.addEventListener("resize", setCanvasSize);
@@ -21,13 +19,19 @@ const DrawingCanvas = forwardRef((_, canvasRef) => {
         const ctx = canvas.getContext("2d");
         ctx.lineCap = "round";
         ctx.lineWidth = 3;
-        ctx.strokeStyle = "#000";
+        ctx.strokeStyle = brushColor;
         contextRef.current = ctx;
 
         return () => {
             window.removeEventListener("resize", setCanvasSize);
         };
     }, []);
+
+    useEffect(() => {
+        if (contextRef.current) {
+            contextRef.current.strokeStyle = brushColor;
+        }
+    }, [brushColor]);
 
     const startDrawing = (e) => {
         const ctx = contextRef.current;

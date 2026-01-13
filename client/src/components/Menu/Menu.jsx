@@ -1,8 +1,7 @@
-// src/components/Menu/Menu.jsx
 import React, { useContext, useEffect, useRef, useState } from "react";
 import { EPAGES, MediatorContext, ServerContext } from "../../App";
 import logo from "./image/logo.png";
-import Whiteboard from "../WhiteBoard/WhiteBoard"; // Убедитесь, что путь правильный
+import Whiteboard from "../WhiteBoard/WhiteBoard";
 import "./Menu.css";
 
 const Menu = ({ epages }) => {
@@ -52,7 +51,6 @@ const Menu = ({ epages }) => {
         setShowWhiteboard(true);
     };
 
-    // Если показываем whiteboard — рендерим его вместо меню
     if (showWhiteboard) {
         return <Whiteboard onBack={() => setShowWhiteboard(false)} />;
     }
