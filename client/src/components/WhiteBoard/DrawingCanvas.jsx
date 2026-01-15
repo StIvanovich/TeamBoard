@@ -1,18 +1,32 @@
 import React, { forwardRef, useEffect, useRef } from "react";
 
-const DrawingCanvas = forwardRef(({ brushColor }, canvasRef) => {
+const DrawingCanvas = forwardRef(({ brushColor, onDrawEnd }, canvasRef) => {
     const internalRef = useRef(null);
     const contextRef = useRef(null);
     const isDrawingRef = useRef(false);
+    const savedImageDataRef = useRef(null);
+
+    const setCanvasSize = () => {
+        const canvas = internalRef.current;
+        if (!canvas) return;
+
+        if (contextRef.current) {
+            savedImageDataRef.current = contextRef.current.getImageData(0, 0, canvas.width, canvas.height);
+        }
+
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight - 80;
+
+        if (savedImageDataRef.current) {
+            contextRef.current.putImageData(savedImageDataRef.current, 0, 0);
+            savedImageDataRef.current = null;
+        }
+    };
 
     useEffect(() => {
         const canvas = internalRef.current;
         if (!canvas) return;
 
-        const setCanvasSize = () => {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight - 80;
-        };
         setCanvasSize();
         window.addEventListener("resize", setCanvasSize);
 
@@ -53,6 +67,10 @@ const DrawingCanvas = forwardRef(({ brushColor }, canvasRef) => {
         if (isDrawingRef.current) {
             contextRef.current.closePath();
             isDrawingRef.current = false;
+
+            if (onDrawEnd) {
+                onDrawEnd();
+            }
         }
     };
 

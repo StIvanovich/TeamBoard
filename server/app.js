@@ -34,5 +34,5 @@ app.get("/api/test", (req, res) => {
 });
 
 server.listen(PORT, () => {
-    console.log(`Эта залупа запустилась(Ай вырубай)`);
+    console.log(`Я поднялся`);
 });

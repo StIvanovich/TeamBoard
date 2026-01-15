@@ -1,7 +1,6 @@
 import React, { useContext, useEffect, useRef, useState } from "react";
 import "./Login.css";
 import { EPAGES, MediatorContext, ServerContext } from "../../App";
-// import md5 from "md5";
 
 const Login = ({ epages }) => {
     const mediator = useContext(MediatorContext);

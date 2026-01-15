@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect, useContext } from "react";
 import DrawingCanvas from "./DrawingCanvas";
 import StickyNote from "./StickyNote";
-import { ServerContext, MediatorContext } from "../../App"; // ← путь может отличаться
+import { ServerContext, MediatorContext } from "../../App";
 import "./Whiteboard.css";
 
 const Whiteboard = ({ onBack, initialBoardId = null, initialCanvasData = null, initialStickers = [] }) => {
@@ -12,8 +12,16 @@ const Whiteboard = ({ onBack, initialBoardId = null, initialCanvasData = null, i
     const [stickers, setStickers] = useState(initialStickers);
     const [brushColor, setBrushColor] = useState("#000000");
     const [boardId, setBoardId] = useState(initialBoardId);
+    const [isCreating, setIsCreating] = useState(!initialBoardId);
 
-    // Загрузка данных на холст при монтировании
+    const saveBoard = () => {
+        if (!canvasRef.current || !boardId) return;
+
+        const canvasData = canvasRef.current.toDataURL("image/png");
+
+        server.saveBoard(boardId, canvasData, stickers);
+    };
+
     useEffect(() => {
         if (initialCanvasData && canvasRef.current) {
             const img = new Image();
@@ -26,62 +34,44 @@ const Whiteboard = ({ onBack, initialBoardId = null, initialCanvasData = null, i
         }
     }, [initialCanvasData]);
 
-    // Обработка создания новой доски
     useEffect(() => {
         const handleCreateBoard = (data) => {
             setBoardId(data.id);
+            setIsCreating(false);
         };
 
         const { CREATE_BOARD } = mediator.getEventTypes();
         mediator.subscribe(CREATE_BOARD, handleCreateBoard);
 
+        if (isCreating) {
+            server.createBoard("Новая доска");
+        }
+
         return () => {
             mediator.unsubscribe(CREATE_BOARD, handleCreateBoard);
         };
-    }, [mediator]);
+    }, [mediator, server, isCreating]);
 
-    // Функции стикеров
     const addSticker = () => {
         const id = Date.now();
         setStickers((prev) => [...prev, { id, x: 100 + Math.random() * 200, y: 100 + Math.random() * 200, text: "" }]);
+
+        setTimeout(saveBoard, 0);
     };
 
     const updateStickerText = (id, text) => {
         setStickers((prev) => prev.map((sticker) => (sticker.id === id ? { ...sticker, text } : sticker)));
+        saveBoard();
     };
 
     const updateStickerPosition = (id, x, y) => {
         setStickers((prev) => prev.map((sticker) => (sticker.id === id ? { ...sticker, x, y } : sticker)));
+        saveBoard();
     };
 
     const deleteSticker = (id) => {
         setStickers((prev) => prev.filter((s) => s.id !== id));
-    };
-
-    // Сохранение доски
-    const saveBoard = () => {
-        if (!canvasRef.current) return;
-
-        const canvasData = canvasRef.current.toDataURL("image/png");
-        server.saveBoard(boardId, canvasData, stickers);
-    };
-
-    // Авто-сохранение каждые 30 секунд (если есть boardId)
-    useEffect(() => {
-        if (!boardId) return;
-
-        const interval = setInterval(saveBoard, 30000);
-        return () => clearInterval(interval);
-    }, [boardId, stickers, brushColor]);
-
-    // Кнопка сохранения (временно для теста)
-    const handleSaveClick = () => {
-        if (!boardId) {
-            // Если доска новая — сначала создать запись
-            server.createBoard("Новая доска");
-        } else {
-            saveBoard();
-        }
+        saveBoard();
     };
 
     return (
@@ -94,12 +84,10 @@ const Whiteboard = ({ onBack, initialBoardId = null, initialCanvasData = null, i
                     + Стикер
                 </button>
                 <input type="color" value={brushColor} onChange={(e) => setBrushColor(e.target.value)} className="color-picker-input" />
-                <button onClick={handleSaveClick} style={{ marginLeft: "10px" }} disabled={!boardId && !initialBoardId}>
-                    💾 {boardId ? "Сохранить" : "Создать и сохранить"}
-                </button>
+                {isCreating && <span className="creating-indicator">Создание доски...</span>}
             </div>
             <div className="whiteboard-content">
-                <DrawingCanvas brushColor={brushColor} ref={canvasRef} />
+                <DrawingCanvas brushColor={brushColor} ref={canvasRef} onDrawEnd={saveBoard} />
                 {stickers.map((sticker) => (
                     <StickyNote
                         key={sticker.id}

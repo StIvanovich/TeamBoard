@@ -86,14 +86,25 @@ class UserManager {
     }
 
     async saveBoard({ boardId, canvasData, stickers, token }, socketId) {
+        console.log("📥 SAVE_BOARD получен на сервере:", {
+            boardId,
+            token,
+            canvasLength: canvasData?.length || 0,
+            stickersCount: Array.isArray(stickers) ? stickers.length : 0,
+        });
+
         const userRecord = await this.db.getUserByToken(token);
         if (!userRecord) {
             this.io.to(socketId).emit("SAVE_BOARD", this.answer.bad(455));
             return;
         }
 
-        await this.db.saveBoardData(boardId, canvasData, stickers);
-        this.io.to(socketId).emit("SAVE_BOARD", this.answer.good());
+        try {
+            await this.db.saveBoardData(boardId, canvasData, stickers);
+            this.io.to(socketId).emit("SAVE_BOARD", this.answer.good());
+        } catch (err) {
+            this.io.to(socketId).emit("SAVE_BOARD", this.answer.bad(9000));
+        }
     }
 
     async loadBoards({ token }, socketId) {

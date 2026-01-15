@@ -1,8 +1,10 @@
 import React, { useContext, useEffect, useRef, useState } from "react";
 import { EPAGES, MediatorContext, ServerContext } from "../../App";
 import logo from "./image/logo.png";
-import Whiteboard from "../WhiteBoard/WhiteBoard";
+import Whiteboard from "../WhiteBoard/Whiteboard";
 import "./Menu.css";
+import CreateBoardModal from "./CreateBoardModal";
+import BoardListModal from "./BoardListModal";
 
 const Menu = ({ epages }) => {
     const server = useContext(ServerContext);
@@ -12,8 +14,11 @@ const Menu = ({ epages }) => {
     const [friends, setFriends] = useState([{ id: 0, name: "У Вас нет друзей!" }]);
     const [invites, setInvites] = useState(null);
     const [showIdInput, setShowIdInput] = useState(false);
-    const [boards, setBoards] = useState([]);
     const [currentBoardData, setCurrentBoardData] = useState(null);
+
+    const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+    const [isBoardListOpen, setIsBoardListOpen] = useState(false);
+    const [shouldOpenNewBoard, setShouldOpenNewBoard] = useState(false);
 
     const clickHandler = () => {
         const id = idRef.current?.value?.trim();
@@ -27,26 +32,20 @@ const Menu = ({ epages }) => {
         setShowIdInput((prev) => !prev);
     };
 
-    const createNewBoard = () => {
-        console.log("📌 Токен при создании доски:", server.token);
-        server.createBoard("Новая доска");
-    };
-
-    const openBoard = (boardId) => {
-        server.loadBoard(boardId);
+    const handleCreateBoard = (name) => {
+        server.createBoard(name);
+        setShouldOpenNewBoard(true);
+        setIsCreateModalOpen(false);
     };
 
     useEffect(() => {
-        const { GET_INVITES, GET_FRIENDS, LOGOUT, LOAD_BOARDS, LOAD_BOARD, CREATE_BOARD } = mediator.getEventTypes();
+        const { GET_INVITES, GET_FRIENDS, LOGOUT, LOAD_BOARD, CREATE_BOARD, LOAD_BOARDS } = mediator.getEventTypes();
 
         const getInvitesHandler = (data) => setInvites(data);
         const getFriendsHandler = (data) => setFriends(data);
         const logoutHandler = () => {
             setCurrentBoardData(null);
             epages(EPAGES.LOGIN);
-        };
-        const loadBoardsHandler = (data) => {
-            setBoards(data || []);
         };
         const loadBoardHandler = (data) => {
             setCurrentBoardData({
@@ -55,28 +54,33 @@ const Menu = ({ epages }) => {
                 stickers: JSON.parse(data.stickers || "[]"),
             });
         };
-        const createBoardHandler = () => {
+        const createBoardHandler = (data) => {
             server.loadBoards();
+
+            if (shouldOpenNewBoard) {
+                setCurrentBoardData({
+                    id: data.id,
+                    canvasData: null,
+                    stickers: [],
+                });
+                setShouldOpenNewBoard(false);
+            }
         };
 
         mediator.subscribe(GET_FRIENDS, getFriendsHandler);
         mediator.subscribe(GET_INVITES, getInvitesHandler);
         mediator.subscribe(LOGOUT, logoutHandler);
-        mediator.subscribe(LOAD_BOARDS, loadBoardsHandler);
         mediator.subscribe(LOAD_BOARD, loadBoardHandler);
         mediator.subscribe(CREATE_BOARD, createBoardHandler);
-
-        server.loadBoards();
 
         return () => {
             mediator.unsubscribe(GET_FRIENDS, getFriendsHandler);
             mediator.unsubscribe(GET_INVITES, getInvitesHandler);
             mediator.unsubscribe(LOGOUT, logoutHandler);
-            mediator.unsubscribe(LOAD_BOARDS, loadBoardsHandler);
             mediator.unsubscribe(LOAD_BOARD, loadBoardHandler);
             mediator.unsubscribe(CREATE_BOARD, createBoardHandler);
         };
-    }, [mediator, epages, server, server.token]);
+    }, [mediator, epages, server, shouldOpenNewBoard]);
 
     if (currentBoardData) {
         return <Whiteboard onBack={() => setCurrentBoardData(null)} initialBoardId={currentBoardData.id} initialCanvasData={currentBoardData.canvasData} initialStickers={currentBoardData.stickers} />;
@@ -87,10 +91,10 @@ const Menu = ({ epages }) => {
             <img className="photo-button" src={logo} id="test-logo" alt="Логотип" />
 
             <div className="buttons-container">
-                <div onClick={createNewBoard} className="button1" id="test-play">
+                <div onClick={() => setIsCreateModalOpen(true)} className="button1" id="test-play">
                     Создать Доску
                 </div>
-                <div onClick={() => server.loadBoards()} className="button2" id="test-heroes">
+                <div onClick={() => setIsBoardListOpen(true)} className="button2" id="test-heroes">
                     Список доступных досок
                 </div>
                 <div onClick={() => epages(EPAGES.PARAMETERS)} className="button3" id="test-settings">
@@ -101,31 +105,6 @@ const Menu = ({ epages }) => {
             <div className="profile-panel" id="test-profile">
                 <div className="user-profile" id="test-user"></div>
                 <hr className="hr-user-profile1" id="test-hr1" />
-
-                <div className="text-button" id="test-friends">
-                    Мои доски
-                    <div style={{ marginTop: "8px", maxHeight: "150px", overflowY: "auto" }}>
-                        {boards.length > 0 ? (
-                            boards.map((board) => (
-                                <div
-                                    key={board.id}
-                                    onClick={() => openBoard(board.id)}
-                                    style={{
-                                        padding: "4px 8px",
-                                        margin: "2px 0",
-                                        backgroundColor: "#f0f0f0",
-                                        borderRadius: "4px",
-                                        cursor: "pointer",
-                                    }}
-                                >
-                                    {board.name || `Доска #${board.id}`}
-                                </div>
-                            ))
-                        ) : (
-                            <div style={{ color: "#888", fontSize: "14px" }}>Нет сохранённых досок</div>
-                        )}
-                    </div>
-                </div>
 
                 <hr className="hr-user-profile1" id="test-hr1-friends" />
 
@@ -191,6 +170,17 @@ const Menu = ({ epages }) => {
             <button className="button-account" id="test-change-account" onClick={() => server.logout()}>
                 Сменить аккаунт
             </button>
+
+            {/* Модальные окна */}
+            <CreateBoardModal isOpen={isCreateModalOpen} onClose={() => setIsCreateModalOpen(false)} onCreate={handleCreateBoard} />
+            <BoardListModal
+                isOpen={isBoardListOpen}
+                onClose={() => setIsBoardListOpen(false)}
+                onOpenBoard={(boardId) => {
+                    server.loadBoard(boardId);
+                    setIsBoardListOpen(false);
+                }}
+            />
         </div>
     );
 };
