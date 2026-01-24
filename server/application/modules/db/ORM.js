@@ -89,11 +89,18 @@ class ORM {
         return res;
     }
 
-    delete(table) {
+    delete(table, params = {}) {
         const values = [];
-        const query = `
-        DELETE FROM ${table} 
-    `;
+        const conditions = [];
+
+        Object.keys(params).forEach((key, index) => {
+            conditions.push(`${key} = $${index + 1}`);
+            values.push(params[key]);
+        });
+
+        const whereClause = conditions.length > 0 ? ` WHERE ${conditions.join(" AND ")}` : "";
+
+        const query = `DELETE FROM ${table}${whereClause}`;
         return this.db.query(query, values);
     }
 }

@@ -32,6 +32,7 @@ const Login = ({ epages }) => {
         const { SERVER_ERROR } = mediator.getEventTypes();
 
         const loginHandler = () => {
+            server.loadFriends();
             epages(EPAGES.MENU);
         };
         const serverErrorHandler = (error) => {

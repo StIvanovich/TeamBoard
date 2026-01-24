@@ -49,16 +49,44 @@ class DB {
     }
 
     getBoardsByUserId(userId) {
-        return this.orm.all("boards", { owner_id: userId }, "id, name, created_at", true);
+        return this.db
+            .query(
+                `
+        (
+            SELECT 
+                b.id, 
+                b.name, 
+                b.owner_id, 
+                u.name AS owner_name
+            FROM boards b
+            JOIN users u ON b.owner_id = u.id
+            WHERE b.owner_id = $1
+        )
+        UNION
+        (
+            SELECT 
+                b.id, 
+                b.name, 
+                b.owner_id, 
+                u.name AS owner_name
+            FROM board_access ba
+            JOIN boards b ON ba.board_id = b.id
+            JOIN users u ON b.owner_id = u.id
+            WHERE ba.user_id = $1
+        )
+        ORDER BY id DESC
+    `,
+                [userId],
+            )
+            .then((res) => res.rows);
     }
 
-    // Создать доску
     async createBoard(ownerId, name = "Новая доска") {
         const result = await this.orm.insert("boards", { owner_id: ownerId, name });
-        // Добавьте RETURNING id
-        return result; // Убедитесь, что ORM возвращает данные
+
+        return result;
     }
-    // Сохранить данные доски
+
     saveBoardData(boardId, canvasData, stickers) {
         return this.orm.insert(
             "board_data",
@@ -67,13 +95,24 @@ class DB {
                 canvas_data: canvasData,
                 stickers: JSON.stringify(stickers),
             },
-            "ON CONFLICT (board_id) DO UPDATE SET canvas_data = EXCLUDED.canvas_data, stickers = EXCLUDED.stickers, updated_at = NOW()"
+            "ON CONFLICT (board_id) DO UPDATE SET canvas_data = EXCLUDED.canvas_data, stickers = EXCLUDED.stickers, updated_at = NOW()",
         );
     }
 
-    // Загрузить данные доски
     getBoardData(boardId) {
         return this.orm.get("board_data", { board_id: boardId });
+    }
+    deleteBoard(boardId) {
+        return this.orm.delete("boards", { id: boardId });
+    }
+    getFriendsByUserId(userId) {
+        return this.orm.query(
+            `SELECT u.id, u.name 
+         FROM friends f
+         JOIN users u ON u.id = f.friend_id
+         WHERE f.user_id = $1`,
+            [userId],
+        );
     }
 }
 

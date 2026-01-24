@@ -15,34 +15,122 @@ export default class Server {
     }
 
     _registerEventHandlers(socket) {
-        const { LOGIN, SIGNUP, LOGOUT, CREATE_BOARD, LOAD_BOARDS, LOAD_BOARD, SERVER_ERROR } = this.mediator.getEventTypes();
-
-        const handleResponse = (eventType, data) => {
-            const result = this._validate(data);
-            if (result) {
-                this.mediator.call(eventType, result);
-            } else {
-                this.mediator.call(SERVER_ERROR, data.error || { code: 9000, text: "Неизвестная ошибка" });
-            }
-        };
+        const {
+            LOGIN,
+            SIGNUP,
+            LOGOUT,
+            CREATE_BOARD,
+            LOAD_BOARDS,
+            LOAD_BOARD,
+            SERVER_ERROR,
+            FRIEND_REQUEST,
+            FRIEND_ACCEPTED,
+            ADD_FRIEND_SUCCESS,
+            GET_FRIENDS,
+            BOARD_INVITE,
+            INVITE_SENT,
+            BOARD_ACCESS_GRANTED,
+            FRIEND_JOINED_BOARD,
+            BOARD_UPDATE,
+        } = this.mediator.getEventTypes();
 
         socket.on("LOGIN", (data) => {
-            console.log("LOGIN ответ:", data);
             const result = this._validate(data);
             if (result) {
                 this.token = result.token;
-                console.log("Токен установлен:", this.token);
                 this.mediator.call(LOGIN, result);
             } else {
                 this.mediator.call(SERVER_ERROR, data.error);
             }
         });
 
-        socket.on("SIGNUP", (data) => handleResponse(SIGNUP, data));
-        socket.on("LOGOUT", (data) => handleResponse(LOGOUT, data));
-        socket.on("CREATE_BOARD", (data) => handleResponse(CREATE_BOARD, data));
-        socket.on("LOAD_BOARDS", (data) => handleResponse(LOAD_BOARDS, data));
-        socket.on("LOAD_BOARD", (data) => handleResponse(LOAD_BOARD, data));
+        socket.on("GET_FRIENDS", (data) => {
+            this.mediator.call(GET_FRIENDS, data); // data — массив
+        });
+
+        socket.on("ADD_FRIEND_SUCCESS", (message) => {
+            this.mediator.call(ADD_FRIEND_SUCCESS, message); // строка
+        });
+
+        socket.on("SIGNUP", (data) => {
+            if (data.result === "ok") {
+                this.mediator.call(SIGNUP, data);
+            } else {
+                this.mediator.call(SERVER_ERROR, data.error);
+            }
+        });
+
+        socket.on("LOGOUT", (data) => {
+            if (data.result === "ok") {
+                this.token = null;
+                this.mediator.call(LOGOUT, data);
+            } else {
+                this.mediator.call(SERVER_ERROR, data.error);
+            }
+        });
+
+        socket.on("CREATE_BOARD", (data) => {
+            if (data.result === "ok") {
+                this.mediator.call(CREATE_BOARD, data.data);
+            } else {
+                this.mediator.call(SERVER_ERROR, data.error);
+            }
+        });
+
+        socket.on("LOAD_BOARDS", (data) => {
+            if (data.result === "ok") {
+                this.mediator.call(LOAD_BOARDS, data.data);
+            } else {
+                this.mediator.call(SERVER_ERROR, data.error);
+            }
+        });
+
+        socket.on("LOAD_BOARD", (data) => {
+            if (data.result === "ok") {
+                this.mediator.call(LOAD_BOARD, data.data);
+            } else {
+                this.mediator.call(SERVER_ERROR, data.error);
+            }
+        });
+
+        socket.on("FRIEND_REQUEST", (data) => {
+            this.mediator.call(FRIEND_REQUEST, data);
+        });
+
+        socket.on("FRIEND_ACCEPTED", (data) => {
+            this.mediator.call(FRIEND_ACCEPTED, data);
+        });
+
+        socket.on("SERVER_ERROR", (data) => {
+            this.mediator.call(SERVER_ERROR, data);
+        });
+        socket.on("BOARD_INVITE", (data) => {
+            this.mediator.call(BOARD_INVITE, data);
+        });
+
+        socket.on("INVITE_SENT", (data) => {
+            if (data.result === "ok") {
+                this.mediator.call(INVITE_SENT, data.data);
+            } else {
+                this.mediator.call(SERVER_ERROR, data.error);
+            }
+        });
+
+        socket.on("BOARD_ACCESS_GRANTED", (data) => {
+            if (data.result === "ok") {
+                this.mediator.call(BOARD_ACCESS_GRANTED, data.data);
+            } else {
+                this.mediator.call(SERVER_ERROR, data.error);
+            }
+        });
+
+        socket.on("FRIEND_JOINED_BOARD", (data) => {
+            this.mediator.call(FRIEND_JOINED_BOARD, data);
+        });
+
+        socket.on("BOARD_UPDATE", (data) => {
+            this.mediator.call(BOARD_UPDATE, data);
+        });
     }
 
     _validate(data) {
@@ -82,5 +170,35 @@ export default class Server {
 
     loadBoard(boardId) {
         this.socket.emit("LOAD_BOARD", { boardId, token: this.token });
+    }
+
+    loadFriends() {
+        if (this.token) {
+            this.socket.emit("LOAD_FRIENDS", { token: this.token });
+        }
+    }
+
+    addFriend(friendId) {
+        this.socket.emit("ADD_FRIEND", { friendId, token: this.token });
+    }
+
+    acceptFriend(requestId) {
+        this.socket.emit("ACCEPT_FRIEND", { requestId, token: this.token });
+    }
+
+    inviteToBoard(boardId, friendId) {
+        this.socket.emit("INVITE_TO_BOARD", { boardId, friendId, token: this.token });
+    }
+
+    acceptBoardInvite(inviteId) {
+        this.socket.emit("ACCEPT_BOARD_INVITE", { inviteId, token: this.token });
+    }
+
+    joinBoardChannel(boardId) {
+        this.socket.emit("JOIN_BOARD", { boardId, token: this.token });
+    }
+
+    leaveBoardChannel(boardId) {
+        this.socket.emit("LEAVE_BOARD", { boardId, token: this.token });
     }
 }
