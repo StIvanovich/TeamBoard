@@ -2,7 +2,6 @@ import React, { useContext, useEffect, useRef, useState } from "react";
 import { EPAGES, ServerContext, MediatorContext } from "../../App";
 import logo from "../SingUp/image/logo.jpg";
 import "../SingUp/SignUp.css";
-//import md5 from "md5";
 
 const SignUp = ({ epages }) => {
     const mediator = useContext(MediatorContext);

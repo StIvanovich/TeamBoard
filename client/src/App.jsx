@@ -48,14 +48,13 @@ export const EPAGES = {
 function App() {
     const [epages, setEpages] = useState(EPAGES.SIGNUP);
 
-    // Создаём Mediator и Server только один раз
     const mediator = useMemo(() => new Mediator(MEDIATOR), []);
     const server = useMemo(() => new Server(HOST, mediator), [mediator]);
 
     return (
         <MediatorContext.Provider value={mediator}>
             <ServerContext.Provider value={server}>
-                {epages === EPAGES.SIGNUP ? <SignUp epages={setEpages} /> : epages === EPAGES.LOGIN ? <Login epages={setEpages} /> : epages === EPAGES.MENU ? <Menu /> : <></>}
+                {epages === EPAGES.SIGNUP ? <SignUp epages={setEpages} /> : epages === EPAGES.LOGIN ? <Login epages={setEpages} /> : epages === EPAGES.MENU ? <Menu epages={setEpages} /> : <></>}
             </ServerContext.Provider>
         </MediatorContext.Provider>
     );

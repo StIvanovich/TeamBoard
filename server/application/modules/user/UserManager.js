@@ -176,7 +176,7 @@ class UserManager {
             return this.io.to(socketId).emit("LOAD_BOARD", this.answer.bad(455));
         }
 
-        // Проверка доступа к доске
+        
         const hasAccess = await this.db.db.query(
             `SELECT 1 FROM boards WHERE id = $1 AND owner_id = $2
          UNION
@@ -185,15 +185,15 @@ class UserManager {
         );
 
         if (hasAccess.rows.length === 0) {
-            return this.io.to(socketId).emit("LOAD_BOARD", this.answer.bad(403)); // доступ запрещён
+            return this.io.to(socketId).emit("LOAD_BOARD", this.answer.bad(403)); 
         }
 
-        // Загружаем данные доски
+        
         const data = await this.db.getBoardData(boardId);
 
-        // 🔴 КРИТИЧЕСКАЯ ПРОВЕРКА: доска может не иметь данных (например, новая)
+        
         if (!data) {
-            // Возвращаем пустые данные — это нормально для новой доски
+            
             return this.io.to(socketId).emit(
                 "LOAD_BOARD",
                 this.answer.good({
@@ -204,7 +204,7 @@ class UserManager {
             );
         }
 
-        // Парсим стикеры безопасно
+        
         let parsedStickers = [];
         if (data.stickers) {
             try {
@@ -338,7 +338,7 @@ class UserManager {
         this.io.to(socketId).emit("GET_FRIENDS", friendsRes.rows);
     }
 
-    // === НОВЫЕ МЕТОДЫ ДЛЯ СОВМЕСТНЫХ ДОСОК ===
+    
 
     async inviteToBoard({ boardId, friendId, token }, socketId) {
         const user = await this.db.getUserByToken(token);

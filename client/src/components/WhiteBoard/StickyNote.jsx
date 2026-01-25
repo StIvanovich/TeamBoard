@@ -1,54 +1,65 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 
 const StickyNote = ({ id, x, y, text, onUpdateText, onUpdatePosition, onDelete }) => {
     const [isEditing, setIsEditing] = useState(false);
     const [localText, setLocalText] = useState(text);
-    const [dragging, setDragging] = useState(false);
     const noteRef = useRef(null);
 
-    const offsetRef = useRef({ x: 0, y: 0 });
+    useEffect(() => {
+        if (!isEditing) {
+            setLocalText(text);
+        }
+    }, [text, isEditing]);
 
-    const handleMouseDown = (e) => {
+    const handleMouseEnter = () => {
+        if (noteRef.current) {
+            noteRef.current.style.opacity = "0.7";
+        }
+    };
+
+    const handleMouseLeave = () => {
+        if (noteRef.current) {
+            noteRef.current.style.opacity = "1";
+        }
+    };
+
+    const handleTextMouseDown = (e) => {
         if (isEditing) return;
-
-        const rect = noteRef.current.getBoundingClientRect();
-        offsetRef.current = {
-            x: e.clientX - rect.left,
-            y: e.clientY - rect.top,
-        };
-        setDragging(true);
         e.stopPropagation();
-    };
+        const startX = e.clientX;
+        const startY = e.clientY;
+        const startLeft = x;
+        const startTop = y;
 
-    const handleMouseMove = (e) => {
-        if (!dragging) return;
+        const handleMouseMove = (moveEvent) => {
+            const dx = moveEvent.clientX - startX;
+            const dy = moveEvent.clientY - startY;
+            let newX = startLeft + dx;
+            let newY = startTop + dy;
 
-        const newX = e.clientX - offsetRef.current.x;
-        const newY = e.clientY - offsetRef.current.y;
+            newX = Math.max(0, Math.min(window.innerWidth - 180, newX));
+            newY = Math.max(60, Math.min(window.innerHeight - 120, newY));
 
-        const boundedX = Math.max(0, Math.min(window.innerWidth - 180, newX));
-        const boundedY = Math.max(60, Math.min(window.innerHeight - 120, newY));
+            noteRef.current.style.transform = `translate(${newX - startLeft}px, ${newY - startTop}px)`;
+        };
 
-        onUpdatePosition(id, boundedX, boundedY);
-    };
-
-    const handleMouseUp = () => {
-        if (dragging) {
-            setDragging(false);
-        }
-    };
-
-    React.useEffect(() => {
-        if (dragging) {
-            document.addEventListener("mousemove", handleMouseMove);
-            document.addEventListener("mouseup", handleMouseUp);
-        }
-
-        return () => {
+        const handleMouseUp = () => {
             document.removeEventListener("mousemove", handleMouseMove);
             document.removeEventListener("mouseup", handleMouseUp);
+
+            const finalX = parseFloat(noteRef.current.style.transform.split("translate(")[1]?.split("px")[0] || "0") + startLeft;
+            const finalY = parseFloat(noteRef.current.style.transform.split(",")[1]?.trim().split("px")[0] || "0") + startTop;
+
+            const boundedX = Math.max(0, Math.min(window.innerWidth - 180, finalX));
+            const boundedY = Math.max(60, Math.min(window.innerHeight - 120, finalY));
+
+            onUpdatePosition(id, boundedX, boundedY);
+            noteRef.current.style.transform = "";
         };
-    }, [dragging]);
+
+        document.addEventListener("mousemove", handleMouseMove);
+        document.addEventListener("mouseup", handleMouseUp);
+    };
 
     const handleBlur = () => {
         onUpdateText(id, localText);
@@ -60,13 +71,14 @@ const StickyNote = ({ id, x, y, text, onUpdateText, onUpdatePosition, onDelete }
             ref={noteRef}
             className="sticky-note"
             style={{
-                left: x + "px",
-                top: y + "px",
-                cursor: dragging ? "grabbing" : isEditing ? "text" : "grab",
-                zIndex: dragging ? 100 : 3,
+                position: "absolute",
+                left: `${x}px`,
+                top: `${y}px`,
+                cursor: isEditing ? "text" : "grab",
+                userSelect: isEditing ? "text" : "none",
             }}
-            onMouseDown={handleMouseDown}
-            onClick={(e) => e.stopPropagation()}
+            onMouseEnter={handleMouseEnter}
+            onMouseLeave={handleMouseLeave}
         >
             {isEditing ? (
                 <textarea
@@ -83,7 +95,7 @@ const StickyNote = ({ id, x, y, text, onUpdateText, onUpdatePosition, onDelete }
                     autoFocus
                 />
             ) : (
-                <div className="sticky-content" onDoubleClick={() => setIsEditing(true)}>
+                <div className="sticky-content" onMouseDown={handleTextMouseDown} onDoubleClick={() => setIsEditing(true)}>
                     {localText || "Двойной клик для редактирования"}
                 </div>
             )}

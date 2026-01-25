@@ -67,7 +67,7 @@ const Menu = ({ epages }) => {
         const getInvitesHandler = (data) => setInvites((prev) => ({ ...prev, friendsId: data.friendsId || [] }));
 
         const getFriendsHandler = (friendsList) => {
-            console.log("📥 Список друзей загружен:", friendsList);
+            console.log(" Список друзей загружен:", friendsList);
             setFriends(Array.isArray(friendsList) ? friendsList : []);
         };
 
@@ -110,12 +110,11 @@ const Menu = ({ epages }) => {
         };
 
         const addFriendSuccessHandler = (message) => {
-            console.log("✅", message);
             alert(message);
         };
 
         const friendRequestHandler = (data) => {
-            console.log("📩 Получен запрос в друзья:", data);
+            console.log(" Получен запрос в друзья:", data);
             setInvites((prev) => ({
                 ...prev,
                 friendRequests: [...(prev.friendRequests || []), data],
@@ -145,7 +144,7 @@ const Menu = ({ epages }) => {
 
         const boardAccessGrantedHandler = (data) => {
             alert(`Доступ к доске "${data.boardName}" получен!`);
-            server.loadBoards(); // Обновляем список
+            server.loadBoards();
         };
 
         const friendJoinedBoardHandler = (data) => {
@@ -154,7 +153,6 @@ const Menu = ({ epages }) => {
 
         const boardUpdateHandler = (data) => {
             if (currentBoardData && currentBoardData.id === data.boardId) {
-                // Обновляем холст и стикеры в реальном времени
                 setCurrentBoardData((prev) => ({
                     ...prev,
                     canvasData: data.canvasData,
@@ -235,7 +233,6 @@ const Menu = ({ epages }) => {
                     <hr className="hr-line-Invitation" />
                 </div>
 
-                {/* Заявки в друзья */}
                 <div className="invites-section">
                     {invites?.friendRequests?.map((req) => {
                         if (!req.requestId) return null;
@@ -269,7 +266,6 @@ const Menu = ({ epages }) => {
                         );
                     })}
 
-                    {/* Старые приглашения */}
                     {invites?.friendsId?.length > 0 ? (
                         invites.friendsId.map((invite) => (
                             <div key={`invite-${invite}`} style={{ display: "flex", alignItems: " center", gap: "6px", marginTop: "8px" }}>
@@ -292,7 +288,6 @@ const Menu = ({ epages }) => {
 
                 <div onClick={toggleIdInput} className="new-profile-button"></div>
 
-                {/* Список друзей */}
                 <div className="your-friend-menu" id="test-friend-menu">
                     {friends.length > 0 ? (
                         friends.map((friend) => (

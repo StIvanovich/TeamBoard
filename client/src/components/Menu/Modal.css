@@ -4,7 +4,7 @@
     left: 0;
     width: 100vw;
     height: 100vh;
-    background: rgba(62, 53, 45, 0.4); /* полупрозрачный тёмно-коричневый */
+    background: rgba(62, 53, 45, 0.4);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -12,7 +12,7 @@
 }
 
 .modal-content {
-    background: #fdf9f3; /* тёплый крем */
+    background: #fdf9f3;
     border-radius: 14px;
     width: 90%;
     max-width: 500px;
@@ -33,7 +33,7 @@
     font-size: 19px;
     font-weight: 600;
     color: #3e352d;
-    background-color: #fdf0e0; /* очень светлый персик */
+    background-color: #fdf0e0;
 }
 
 .close-btn {
@@ -49,7 +49,9 @@
     align-items: center;
     justify-content: center;
     border-radius: 50%;
-    transition: background 0.2s, color 0.2s;
+    transition:
+        background 0.2s,
+        color 0.2s;
 }
 
 .close-btn:hover {
@@ -175,7 +177,7 @@
 }
 
 .delete-board-btn:hover {
-    background: #f0e6d8;
+    background: #ffb957;
 }
 
 .delete-board-btn:disabled {

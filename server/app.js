@@ -27,8 +27,8 @@ new UserManager(answer, db, io);
 app.get("/api/test", (req, res) => {
     res.json({
         users: [
-            { id: 1, name: "Залупа" },
-            { id: 2, name: "Член" },
+            { id: 1, name: "Алина" },
+            { id: 2, name: "Стёпа" },
         ],
     });
 });

@@ -45,11 +45,11 @@ export default class Server {
         });
 
         socket.on("GET_FRIENDS", (data) => {
-            this.mediator.call(GET_FRIENDS, data); // data — массив
+            this.mediator.call(GET_FRIENDS, data); 
         });
 
         socket.on("ADD_FRIEND_SUCCESS", (message) => {
-            this.mediator.call(ADD_FRIEND_SUCCESS, message); // строка
+            this.mediator.call(ADD_FRIEND_SUCCESS, message); 
         });
 
         socket.on("SIGNUP", (data) => {

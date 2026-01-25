@@ -4,41 +4,24 @@ const DrawingCanvas = forwardRef(({ brushColor, onDrawEnd }, canvasRef) => {
     const internalRef = useRef(null);
     const contextRef = useRef(null);
     const isDrawingRef = useRef(false);
-    const savedImageDataRef = useRef(null);
 
-    const setCanvasSize = () => {
-        const canvas = internalRef.current;
-        if (!canvas) return;
-
-        if (contextRef.current) {
-            savedImageDataRef.current = contextRef.current.getImageData(0, 0, canvas.width, canvas.height);
-        }
-
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight - 80;
-
-        if (savedImageDataRef.current) {
-            contextRef.current.putImageData(savedImageDataRef.current, 0, 0);
-            savedImageDataRef.current = null;
-        }
-    };
+    const FIXED_WIDTH = 3840;
+    const FIXED_HEIGHT = 2160;
 
     useEffect(() => {
         const canvas = internalRef.current;
         if (!canvas) return;
 
-        setCanvasSize();
-        window.addEventListener("resize", setCanvasSize);
+        canvas.width = FIXED_WIDTH;
+        canvas.height = FIXED_HEIGHT;
 
         const ctx = canvas.getContext("2d");
+        if (!ctx) return;
+
         ctx.lineCap = "round";
         ctx.lineWidth = 3;
         ctx.strokeStyle = brushColor;
         contextRef.current = ctx;
-
-        return () => {
-            window.removeEventListener("resize", setCanvasSize);
-        };
     }, []);
 
     useEffect(() => {
@@ -47,30 +30,41 @@ const DrawingCanvas = forwardRef(({ brushColor, onDrawEnd }, canvasRef) => {
         }
     }, [brushColor]);
 
+    const getMousePos = (e) => {
+        const canvas = internalRef.current;
+        if (!canvas) return { x: 0, y: 0 };
+
+        const rect = canvas.getBoundingClientRect();
+        const scaleX = FIXED_WIDTH / rect.width;
+        const scaleY = FIXED_HEIGHT / rect.height;
+
+        return {
+            x: (e.clientX - rect.left) * scaleX,
+            y: (e.clientY - rect.top) * scaleY,
+        };
+    };
+
     const startDrawing = (e) => {
         const ctx = contextRef.current;
-        const { offsetX, offsetY } = e.nativeEvent || e.touches?.[0] || {};
+        if (!ctx) return;
+        const { x, y } = getMousePos(e);
         ctx.beginPath();
-        ctx.moveTo(offsetX, offsetY);
+        ctx.moveTo(x, y);
         isDrawingRef.current = true;
     };
 
     const draw = (e) => {
-        if (!isDrawingRef.current) return;
-        const ctx = contextRef.current;
-        const { offsetX, offsetY } = e.nativeEvent || e.touches?.[0] || {};
-        ctx.lineTo(offsetX, offsetY);
-        ctx.stroke();
+        if (!isDrawingRef.current || !contextRef.current) return;
+        const { x, y } = getMousePos(e);
+        contextRef.current.lineTo(x, y);
+        contextRef.current.stroke();
     };
 
     const stopDrawing = () => {
         if (isDrawingRef.current) {
             contextRef.current.closePath();
             isDrawingRef.current = false;
-
-            if (onDrawEnd) {
-                onDrawEnd();
-            }
+            if (onDrawEnd) onDrawEnd();
         }
     };
 

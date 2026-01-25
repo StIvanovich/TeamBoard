@@ -14,13 +14,12 @@ const Whiteboard = ({ onBack, initialBoardId = null, initialCanvasData = null, i
     const [boardId, setBoardId] = useState(initialBoardId);
     const [isCreating, setIsCreating] = useState(!initialBoardId);
 
-    const saveBoard = () => {
+    const saveBoardWithStickers = (stickersToSave) => {
         if (!canvasRef.current || !boardId) return;
         const canvasData = canvasRef.current.toDataURL("image/png");
-        server.saveBoard(boardId, canvasData, stickers);
+        server.saveBoard(boardId, canvasData, stickersToSave);
     };
 
-    // Загрузка начального холста
     useEffect(() => {
         if (initialCanvasData && canvasRef.current) {
             const img = new Image();
@@ -33,7 +32,6 @@ const Whiteboard = ({ onBack, initialBoardId = null, initialCanvasData = null, i
         }
     }, [initialCanvasData]);
 
-    // Создание новой доски
     useEffect(() => {
         const handleCreateBoard = (data) => {
             setBoardId(data.id);
@@ -47,10 +45,11 @@ const Whiteboard = ({ onBack, initialBoardId = null, initialCanvasData = null, i
             server.createBoard("Новая доска");
         }
 
-        return () => mediator.unsubscribe(CREATE_BOARD, handleCreateBoard);
+        return () => {
+            mediator.unsubscribe(CREATE_BOARD, handleCreateBoard);
+        };
     }, [mediator, server, isCreating]);
 
-    // Real-time обновления
     useEffect(() => {
         const { BOARD_UPDATE } = mediator.getEventTypes();
 
@@ -87,23 +86,36 @@ const Whiteboard = ({ onBack, initialBoardId = null, initialCanvasData = null, i
 
     const addSticker = () => {
         const id = Date.now();
-        setStickers((prev) => [...prev, { id, x: 100 + Math.random() * 200, y: 100 + Math.random() * 200, text: "" }]);
-        setTimeout(saveBoard, 0);
+        const newSticker = { id, x: 100 + Math.random() * 200, y: 100 + Math.random() * 200, text: "" };
+        setStickers((prev) => {
+            const updated = [...prev, newSticker];
+            saveBoardWithStickers(updated);
+            return updated;
+        });
     };
 
     const updateStickerText = (id, text) => {
-        setStickers((prev) => prev.map((sticker) => (sticker.id === id ? { ...sticker, text } : sticker)));
-        saveBoard();
+        setStickers((prev) => {
+            const updated = prev.map((sticker) => (sticker.id === id ? { ...sticker, text } : sticker));
+            saveBoardWithStickers(updated);
+            return updated;
+        });
     };
 
     const updateStickerPosition = (id, x, y) => {
-        setStickers((prev) => prev.map((sticker) => (sticker.id === id ? { ...sticker, x, y } : sticker)));
-        saveBoard();
+        setStickers((prev) => {
+            const updated = prev.map((sticker) => (sticker.id === id ? { ...sticker, x, y } : sticker));
+            saveBoardWithStickers(updated);
+            return updated;
+        });
     };
 
     const deleteSticker = (id) => {
-        setStickers((prev) => prev.filter((s) => s.id !== id));
-        saveBoard();
+        setStickers((prev) => {
+            const updated = prev.filter((s) => s.id !== id);
+            saveBoardWithStickers(updated);
+            return updated;
+        });
     };
 
     return (
@@ -119,7 +131,6 @@ const Whiteboard = ({ onBack, initialBoardId = null, initialCanvasData = null, i
                 {isCreating && <span className="creating-indicator">Создание доски...</span>}
             </div>
             <div className="whiteboard-content">
-                <DrawingCanvas brushColor={brushColor} ref={canvasRef} onDrawEnd={saveBoard} />
                 {stickers.map((sticker) => (
                     <StickyNote
                         key={sticker.id}
@@ -132,6 +143,7 @@ const Whiteboard = ({ onBack, initialBoardId = null, initialCanvasData = null, i
                         onDelete={deleteSticker}
                     />
                 ))}
+                <DrawingCanvas brushColor={brushColor} ref={canvasRef} onDrawEnd={() => saveBoardWithStickers(stickers)} />
             </div>
         </div>
     );
