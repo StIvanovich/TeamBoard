@@ -42,7 +42,6 @@ const SignUp = ({ epages }) => {
         };
 
         const serverErrorHandler = (error) => {
-            console.log(error);
             setError(error);
         };
         mediator.subscribe(SIGNUP, signUpHandler);

@@ -5,6 +5,8 @@ import Whiteboard from "../WhiteBoard/Whiteboard";
 import "./Menu.css";
 import CreateBoardModal from "./CreateBoardModal";
 import BoardListModal from "./BoardListModal";
+import CustomAlert from "./customAlert/CustomAlert";
+import ConfirmModal from "./confirmModal/ConfirmModal";
 
 const Menu = ({ epages }) => {
     const server = useContext(ServerContext);
@@ -18,6 +20,13 @@ const Menu = ({ epages }) => {
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [isBoardListOpen, setIsBoardListOpen] = useState(false);
     const [shouldOpenNewBoard, setShouldOpenNewBoard] = useState(false);
+    const [customAlertMessage, setCustomAlertMessage] = useState(null);
+    const [confirmMessage, setConfirmMessage] = useState(null);
+    const [pendingInvite, setPendingInvite] = useState(null);
+    const [currentUser, setCurrentUser] = useState(server.user || null);
+
+    const showAlert = (msg) => setCustomAlertMessage(msg);
+    const hideAlert = () => setCustomAlertMessage(null);
 
     const clickHandler = () => {
         const id = idRef.current?.value?.trim();
@@ -37,9 +46,17 @@ const Menu = ({ epages }) => {
         setIsCreateModalOpen(false);
     };
 
-    const loginHandler = (data) => {
-        server.loadBoards();
-        server.loadFriends();
+    const handleAcceptInvite = () => {
+        if (pendingInvite) {
+            server.acceptBoardInvite(pendingInvite.inviteId);
+        }
+        setConfirmMessage(null);
+        setPendingInvite(null);
+    };
+
+    const handleCancelInvite = () => {
+        setConfirmMessage(null);
+        setPendingInvite(null);
     };
 
     useEffect(() => {
@@ -67,12 +84,17 @@ const Menu = ({ epages }) => {
         const getInvitesHandler = (data) => setInvites((prev) => ({ ...prev, friendsId: data.friendsId || [] }));
 
         const getFriendsHandler = (friendsList) => {
-            console.log(" Список друзей загружен:", friendsList);
             setFriends(Array.isArray(friendsList) ? friendsList : []);
+        };
+
+        const loginHandler = (data) => {
+            setCurrentUser(data);
+            server.user = data;
         };
 
         const logoutHandler = () => {
             setCurrentBoardData(null);
+            setCurrentUser(null);
             epages(EPAGES.LOGIN);
         };
 
@@ -83,7 +105,6 @@ const Menu = ({ epages }) => {
                     try {
                         stickers = JSON.parse(data.stickers);
                     } catch (e) {
-                        console.warn("Не удалось распарсить стикеры:", data.stickers, e);
                         stickers = [];
                     }
                 } else if (Array.isArray(data.stickers)) {
@@ -97,6 +118,7 @@ const Menu = ({ epages }) => {
                 stickers: stickers,
             });
         };
+
         const createBoardHandler = (data) => {
             server.loadBoards();
             if (shouldOpenNewBoard) {
@@ -110,11 +132,10 @@ const Menu = ({ epages }) => {
         };
 
         const addFriendSuccessHandler = (message) => {
-            alert(message);
+            showAlert(message);
         };
 
         const friendRequestHandler = (data) => {
-            console.log(" Получен запрос в друзья:", data);
             setInvites((prev) => ({
                 ...prev,
                 friendRequests: [...(prev.friendRequests || []), data],
@@ -127,28 +148,25 @@ const Menu = ({ epages }) => {
                 name: data.friendName,
             };
             setFriends((prev) => [...prev, newFriend]);
-            alert(`Пользователь ${data.friendName} теперь ваш друг!`);
+            showAlert(`Пользователь ${data.friendName} теперь ваш друг!`);
         };
 
         const serverErrorHandler = (error) => {
-            console.error("Ошибка:", error);
-            alert(`Ошибка: ${error.text || "Не удалось выполнить действие"}`);
+            showAlert(`Ошибка: ${error.text || "Не удалось выполнить действие"}`);
         };
 
         const boardInviteHandler = (data) => {
-            const confirmed = window.confirm(`${data.fromUserName} приглашает вас на доску "${data.boardName}". Принять?`);
-            if (confirmed) {
-                server.acceptBoardInvite(data.inviteId);
-            }
+            setConfirmMessage(`${data.fromUserName} приглашает вас на доску "${data.boardName}". Принять?`);
+            setPendingInvite(data);
         };
 
         const boardAccessGrantedHandler = (data) => {
-            alert(`Доступ к доске "${data.boardName}" получен!`);
+            showAlert(`Доступ к доске "${data.boardName}" получен!`);
             server.loadBoards();
         };
 
         const friendJoinedBoardHandler = (data) => {
-            alert(`${data.friendName} присоединился к вашей доске!`);
+            showAlert(`${data.friendName} присоединился к вашей доске!`);
         };
 
         const boardUpdateHandler = (data) => {
@@ -163,6 +181,7 @@ const Menu = ({ epages }) => {
 
         mediator.subscribe(GET_INVITES, getInvitesHandler);
         mediator.subscribe(GET_FRIENDS, getFriendsHandler);
+        mediator.subscribe(LOGIN, loginHandler);
         mediator.subscribe(LOGOUT, logoutHandler);
         mediator.subscribe(LOAD_BOARD, loadBoardHandler);
         mediator.subscribe(CREATE_BOARD, createBoardHandler);
@@ -178,6 +197,7 @@ const Menu = ({ epages }) => {
         return () => {
             mediator.unsubscribe(GET_INVITES, getInvitesHandler);
             mediator.unsubscribe(GET_FRIENDS, getFriendsHandler);
+            mediator.unsubscribe(LOGIN, loginHandler);
             mediator.unsubscribe(LOGOUT, logoutHandler);
             mediator.unsubscribe(LOAD_BOARD, loadBoardHandler);
             mediator.unsubscribe(CREATE_BOARD, createBoardHandler);
@@ -198,6 +218,8 @@ const Menu = ({ epages }) => {
 
     return (
         <div className="mainMenu" id="test-mainMemu">
+            {currentUser && <div className="user-id-badge">Ваш ID: {currentUser.id}</div>}
+
             <img className="photo-button" src={logo} id="test-logo" alt="Логотип" />
 
             <div className="buttons-container">
@@ -315,7 +337,10 @@ const Menu = ({ epages }) => {
                     setIsBoardListOpen(false);
                 }}
                 friends={friends}
+                currentUser={currentUser}
             />
+            <CustomAlert message={customAlertMessage} onClose={hideAlert} />
+            {confirmMessage && <ConfirmModal message={confirmMessage} onConfirm={handleAcceptInvite} onCancel={handleCancelInvite} />}
         </div>
     );
 };

@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect, useContext } from "react";
 import DrawingCanvas from "./DrawingCanvas";
 import StickyNote from "./StickyNote";
 import { ServerContext, MediatorContext } from "../../App";
+import ConfirmModal from "../Menu/confirmModal/ConfirmModal";
 import "./Whiteboard.css";
 
 const Whiteboard = ({ onBack, initialBoardId = null, initialCanvasData = null, initialStickers = [] }) => {
@@ -13,6 +14,8 @@ const Whiteboard = ({ onBack, initialBoardId = null, initialCanvasData = null, i
     const [brushColor, setBrushColor] = useState("#000000");
     const [boardId, setBoardId] = useState(initialBoardId);
     const [isCreating, setIsCreating] = useState(!initialBoardId);
+    const [confirmMessage, setConfirmMessage] = useState(null);
+    const [pendingInvite, setPendingInvite] = useState(null);
 
     const saveBoardWithStickers = (stickersToSave) => {
         if (!canvasRef.current || !boardId) return;
@@ -51,7 +54,7 @@ const Whiteboard = ({ onBack, initialBoardId = null, initialCanvasData = null, i
     }, [mediator, server, isCreating]);
 
     useEffect(() => {
-        const { BOARD_UPDATE } = mediator.getEventTypes();
+        const { BOARD_UPDATE, BOARD_INVITE } = mediator.getEventTypes();
 
         const boardUpdateHandler = (data) => {
             if (data.boardId === boardId) {
@@ -70,7 +73,13 @@ const Whiteboard = ({ onBack, initialBoardId = null, initialCanvasData = null, i
             }
         };
 
+        const boardInviteHandler = (data) => {
+            setConfirmMessage(`${data.fromUserName} приглашает вас на доску "${data.boardName}". Принять?`);
+            setPendingInvite(data);
+        };
+
         mediator.subscribe(BOARD_UPDATE, boardUpdateHandler);
+        mediator.subscribe(BOARD_INVITE, boardInviteHandler);
 
         if (boardId) {
             server.joinBoardChannel(boardId);
@@ -78,11 +87,25 @@ const Whiteboard = ({ onBack, initialBoardId = null, initialCanvasData = null, i
 
         return () => {
             mediator.unsubscribe(BOARD_UPDATE, boardUpdateHandler);
+            mediator.unsubscribe(BOARD_INVITE, boardInviteHandler);
             if (boardId) {
                 server.leaveBoardChannel(boardId);
             }
         };
     }, [mediator, server, boardId]);
+
+    const handleAcceptInvite = () => {
+        if (pendingInvite) {
+            server.acceptBoardInvite(pendingInvite.inviteId);
+        }
+        setConfirmMessage(null);
+        setPendingInvite(null);
+    };
+
+    const handleCancelInvite = () => {
+        setConfirmMessage(null);
+        setPendingInvite(null);
+    };
 
     const addSticker = () => {
         const id = Date.now();
@@ -145,6 +168,8 @@ const Whiteboard = ({ onBack, initialBoardId = null, initialCanvasData = null, i
                 ))}
                 <DrawingCanvas brushColor={brushColor} ref={canvasRef} onDrawEnd={() => saveBoardWithStickers(stickers)} />
             </div>
+
+            {confirmMessage && <ConfirmModal message={confirmMessage} onConfirm={handleAcceptInvite} onCancel={handleCancelInvite} />}
         </div>
     );
 };

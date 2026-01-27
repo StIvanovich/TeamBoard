@@ -11,8 +11,6 @@ class UserManager {
         if (!io) return;
 
         io.on("connection", (socket) => {
-            console.log("🔌 Пользователь подключился:", socket.id);
-
             socket.on("LOGIN", (data) => this.login(data, socket.id));
             socket.on("SIGNUP", (data) => this.signUp(data, socket.id));
             socket.on("LOGOUT", (data) => this.logout(data, socket.id));
@@ -27,6 +25,7 @@ class UserManager {
             socket.on("ACCEPT_BOARD_INVITE", (data) => this.acceptBoardInvite(data, socket.id));
             socket.on("JOIN_BOARD", (data) => this.joinBoard(data, socket.id));
             socket.on("LEAVE_BOARD", (data) => this.leaveBoard(data, socket.id));
+            socket.on("DELETE_BOARD", (data) => this.deleteBoard(data, socket.id));
 
             socket.on("disconnect", () => {
                 this.handleDisconnect(socket.id);
@@ -42,7 +41,6 @@ class UserManager {
     }
 
     handleDisconnect(socketId) {
-        console.log("🔌 Пользователь отключился:", socketId);
         const user = this.users[socketId];
         if (user && user.id) {
             const sockets = this.userSockets.get(user.id);
@@ -176,7 +174,6 @@ class UserManager {
             return this.io.to(socketId).emit("LOAD_BOARD", this.answer.bad(455));
         }
 
-        
         const hasAccess = await this.db.db.query(
             `SELECT 1 FROM boards WHERE id = $1 AND owner_id = $2
          UNION
@@ -185,15 +182,12 @@ class UserManager {
         );
 
         if (hasAccess.rows.length === 0) {
-            return this.io.to(socketId).emit("LOAD_BOARD", this.answer.bad(403)); 
+            return this.io.to(socketId).emit("LOAD_BOARD", this.answer.bad(403));
         }
 
-        
         const data = await this.db.getBoardData(boardId);
 
-        
         if (!data) {
-            
             return this.io.to(socketId).emit(
                 "LOAD_BOARD",
                 this.answer.good({
@@ -204,13 +198,11 @@ class UserManager {
             );
         }
 
-        
         let parsedStickers = [];
         if (data.stickers) {
             try {
                 parsedStickers = JSON.parse(data.stickers);
             } catch (e) {
-                console.warn("Не удалось распарсить стикеры:", data.stickers);
                 parsedStickers = [];
             }
         }
@@ -338,8 +330,6 @@ class UserManager {
         this.io.to(socketId).emit("GET_FRIENDS", friendsRes.rows);
     }
 
-    
-
     async inviteToBoard({ boardId, friendId, token }, socketId) {
         const user = await this.db.getUserByToken(token);
         if (!user) return this.io.to(socketId).emit("SERVER_ERROR", this.answer.bad(455));
@@ -347,19 +337,22 @@ class UserManager {
         const board = await this.db.orm.get("boards", { id: boardId, owner_id: user.id });
         if (!board) return this.io.to(socketId).emit("SERVER_ERROR", this.answer.bad(404));
 
-        const friend = await this.db.getUserById(friendId);
+        const friendIdNum = parseInt(friendId, 10);
+        if (isNaN(friendIdNum)) return this.io.to(socketId).emit("SERVER_ERROR", this.answer.bad(488));
+
+        const friend = await this.db.getUserById(friendIdNum);
         if (!friend) return this.io.to(socketId).emit("SERVER_ERROR", this.answer.bad(488));
 
-        const existing = await this.db.orm.get("board_invites", { board_id: boardId, to_user_id: friendId });
+        const existing = await this.db.orm.get("board_invites", { board_id: boardId, to_user_id: friendIdNum });
         if (existing) return this.io.to(socketId).emit("SERVER_ERROR", this.answer.bad(501));
 
         const invite = await this.db.orm.insert("board_invites", {
             board_id: boardId,
             from_user_id: user.id,
-            to_user_id: friendId,
+            to_user_id: friendIdNum,
         });
 
-        const targetSockets = this.userSockets.get(friendId);
+        const targetSockets = this.userSockets.get(friendIdNum);
         if (targetSockets) {
             targetSockets.forEach((sid) => {
                 this.io.to(sid).emit("BOARD_INVITE", {
@@ -432,6 +425,24 @@ class UserManager {
         const socket = this.io.sockets.sockets.get(socketId);
         if (socket) {
             socket.leave(`board_${boardId}`);
+        }
+    }
+
+    async deleteBoard({ boardId, token }, socketId) {
+        try {
+            const userRecord = await this.db.getUserByToken(token);
+            if (!userRecord) {
+                return this.io.to(socketId).emit("SERVER_ERROR", this.answer.bad(455));
+            }
+
+            await this.db.orm.delete("board_data", { board_id: boardId });
+            await this.db.orm.delete("board_access", { board_id: boardId });
+            await this.db.orm.delete("board_invites", { board_id: boardId });
+            await this.db.orm.delete("boards", { id: boardId });
+
+            this.io.to(socketId).emit("DELETE_BOARD_SUCCESS", { boardId });
+        } catch (err) {
+            this.io.to(socketId).emit("SERVER_ERROR", this.answer.bad(9000));
         }
     }
 }

@@ -1,126 +1,138 @@
-.container {
-    display: flex;
-    justify-content: space-between;
-    padding: 1em;
+* {
     box-sizing: border-box;
 }
 
-img {
-    width: 200px;
+.container-SignUp {
+    min-height: 100vh;
+    width: 100vw;
+    background-image: url(./image/fon.jpg);
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    padding: 20px;
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+    margin: 0;
 }
 
-.text-register {
-    color: #000;
-    padding-top: 30px;
-    font-family: Dhyana;
-    font-size: 3vw;
-    font-style: normal;
-    font-weight: 700;
-    line-height: normal;
+.logo-SignUp {
+    width: 100px;
+    height: auto;
+    margin-bottom: 30px;
+}
+
+.text-SignUp {
+    color: #fdf7f2;
+    font-family: "Playfair Display", serif;
+    font-size: clamp(2rem, 6vw, 3.2rem);
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 30px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
 }
 
 .form-SignUp {
     width: 100%;
     max-width: 420px;
-    margin: 10% auto 0;
     padding: 32px;
-    background: white;
+    background: #fdf7f2;
+    border: 2px solid #c2a994;
     border-radius: 16px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
     text-align: center;
-    font-family: "Inter", sans-serif;
-    box-sizing: border-box;
 }
 
-.container-SignUp {
-    background-image: url(./image/fon.jpg);
-    background-size: cover;
-    background-repeat: no-repeat;
-    width: 100vw;
-    min-height: 100vh;
-    padding: 20px;
-    box-sizing: border-box;
-    margin: 0;
-}
-
-.form-SignUp * {
-    box-sizing: border-box;
+.text-register {
+    color: #4b3832;
+    font-family: "Segoe UI", sans-serif;
+    font-size: 24px;
+    font-weight: 600;
+    margin-bottom: 24px;
 }
 
 .input-SignUp {
-    border: 1px solid #000;
-    border-radius: 1.2vh;
-    height: 3.5vh;
-    padding-left: 20px;
-    width: 70%;
-    align-items: center;
-    margin-top: 3vh;
-    background: #ebe4e4;
+    width: 100%;
+    height: 48px;
+    padding: 0 20px;
+    margin: 12px 0;
+    border: 1px solid #d4c3b3;
+    border-radius: 10px;
+    background: #fdf7f2;
+    font-size: 16px;
+    color: #4b3832;
+    transition:
+        border-color 0.2s,
+        box-shadow 0.2s;
 }
 
-.logo-SignUp {
-    width: 12%;
-    padding-left: 30px;
-    padding-top: 30px;
-}
-
-.text-SignUp {
-    color: #fff;
-    text-shadow: 9px 0px 0px #000;
-    font-family: Playfair Display;
-    position: absolute;
-    top: 40%;
-    left: 13%;
-    width: 20%;
-    font-size: 7vw;
-    font-style: normal;
-    line-height: 100%;
+.input-SignUp:focus {
+    outline: none;
+    border-color: #c2a994;
+    box-shadow: 0 0 0 2px rgba(194, 169, 148, 0.2);
 }
 
 .reg-button {
-    border: 1px solid #000;
-    background: #e0cdcd;
-    border-radius: 13px;
-    margin-top: 30px;
-    height: 5vh;
-    width: 40%;
-    margin-left: auto;
-    margin-right: auto;
-    align-items: center;
-    transition: 0.5s;
+    width: 100%;
+    height: 52px;
+    margin: 28px 0 20px;
+    padding: 0 16px;
+    background: #fdf7f2;
+    border: 2px solid #c2a994;
+    border-radius: 12px;
+    color: #c2a994;
+    font-size: 18px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
 }
 
 .reg-button:hover {
-    background: #d5bbbb;
-    color: #000000;
+    background: #c2a994;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(194, 169, 148, 0.3);
 }
 
 .reg-button:active {
-    box-shadow: inset 0 0 5px #000;
-    color: white;
+    transform: translateY(0);
 }
 
 .hr-SingUp {
-    margin-left: 50px;
-    margin-right: 50px;
-    color: #000;
-    background-color: #000;
+    width: 100%;
+    height: 1px;
+    margin: 24px 0;
+    border: none;
+    background: #d4c3b3;
 }
 
 .estakk {
-    color: #000;
-    font-family: Dhyana;
-    font-size: 2vh;
-    padding-top: 30px;
-    font-style: normal;
-    font-weight: 700;
-    line-height: normal;
-    background-color: unset;
-    transition: 0.2s;
-    cursor: default;
+    color: #4b3832;
+    font-family: "Segoe UI", sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 8px 0;
+    transition: color 0.2s;
 }
 
 .estakk:hover {
-    color: #e18282;
-    font-size: 2.5vh;
+    color: #c2a994;
+    text-decoration: underline;
+}
+
+@media (max-width: 480px) {
+    .form-SignUp {
+        padding: 24px 20px;
+    }
+
+    .text-SignUp {
+        font-size: clamp(1.8rem, 8vw, 2.8rem);
+    }
 }

@@ -1,33 +1,47 @@
 import React, { useContext, useEffect, useState } from "react";
 import { ServerContext, MediatorContext } from "../../App";
 import "./Modal.css";
+import CustomAlert from "./customAlert/CustomAlert";
 
-const BoardListModal = ({ isOpen, onClose, onOpenBoard, friends = [] }) => {
+const BoardListModal = ({ isOpen, onClose, onOpenBoard, friends = [], currentUser }) => {
     const server = useContext(ServerContext);
     const mediator = useContext(MediatorContext);
     const [boards, setBoards] = useState([]);
     const [showInviteModal, setShowInviteModal] = useState(false);
     const [selectedBoard, setSelectedBoard] = useState(null);
     const [selectedFriendIds, setSelectedFriendIds] = useState(new Set());
+    const [customAlertMessage, setCustomAlertMessage] = useState(null);
+    const showAlert = (msg) => setCustomAlertMessage(msg);
+    const hideAlert = () => setCustomAlertMessage(null);
 
     useEffect(() => {
         if (!isOpen) return;
 
-        const { LOAD_BOARDS } = mediator.getEventTypes();
+        const { LOAD_BOARDS, DELETE_BOARD_SUCCESS } = mediator.getEventTypes();
+
         const loadBoardsHandler = (data) => {
             setBoards(Array.isArray(data) ? data : []);
         };
 
+        const deleteSuccessHandler = () => {
+            server.loadBoards();
+        };
+
         mediator.subscribe(LOAD_BOARDS, loadBoardsHandler);
+        mediator.subscribe(DELETE_BOARD_SUCCESS, deleteSuccessHandler);
         server.loadBoards();
 
         return () => {
             mediator.unsubscribe(LOAD_BOARDS, loadBoardsHandler);
+            mediator.unsubscribe(DELETE_BOARD_SUCCESS, deleteSuccessHandler);
         };
     }, [isOpen, mediator, server]);
 
     const handleDelete = (boardId) => {
-        setBoards((prev) => prev.filter((board) => board.id !== boardId));
+        const board = boards.find((b) => b.id === boardId);
+        if (board && currentUser && Number(board.owner_id) === Number(currentUser.id)) {
+            server.deleteBoard(boardId);
+        }
     };
 
     const openInviteModal = (board) => {
@@ -53,7 +67,7 @@ const BoardListModal = ({ isOpen, onClose, onOpenBoard, friends = [] }) => {
             server.inviteToBoard(selectedBoard.id, friendId);
         });
 
-        alert(`Приглашение отправлено ${selectedFriendIds.size} ${getPlural(selectedFriendIds.size)}!`);
+        showAlert(`Приглашение отправлено ${selectedFriendIds.size} ${getPlural(selectedFriendIds.size)}!`);
         setShowInviteModal(false);
     };
 
@@ -67,7 +81,6 @@ const BoardListModal = ({ isOpen, onClose, onOpenBoard, friends = [] }) => {
 
     return (
         <>
-            {/* Основное окно: список досок */}
             <div className="modal-overlay" onClick={onClose}>
                 <div className="modal-content" onClick={(e) => e.stopPropagation()}>
                     <div className="modal-header">
@@ -102,16 +115,18 @@ const BoardListModal = ({ isOpen, onClose, onOpenBoard, friends = [] }) => {
                                         >
                                             👥
                                         </button>
-                                        <button
-                                            className="delete-board-btn"
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                handleDelete(board.id);
-                                            }}
-                                            title="Скрыть доску"
-                                        >
-                                            Х
-                                        </button>
+                                        {currentUser && Number(board.owner_id) === Number(currentUser.id) && (
+                                            <button
+                                                className="delete-board-btn"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleDelete(board.id);
+                                                }}
+                                                title="Удалить доску"
+                                            >
+                                                Х
+                                            </button>
+                                        )}
                                     </div>
                                 ))
                         ) : (
@@ -121,7 +136,6 @@ const BoardListModal = ({ isOpen, onClose, onOpenBoard, friends = [] }) => {
                 </div>
             </div>
 
-            {/* Модалка приглашения */}
             {showInviteModal && (
                 <div className="modal-overlay" onClick={() => setShowInviteModal(false)}>
                     <div className="modal-content" onClick={(e) => e.stopPropagation()}>
@@ -156,6 +170,7 @@ const BoardListModal = ({ isOpen, onClose, onOpenBoard, friends = [] }) => {
                     </div>
                 </div>
             )}
+            <CustomAlert message={customAlertMessage} onClose={hideAlert} />
         </>
     );
 };

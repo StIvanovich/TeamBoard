@@ -32,12 +32,14 @@ export default class Server {
             BOARD_ACCESS_GRANTED,
             FRIEND_JOINED_BOARD,
             BOARD_UPDATE,
+            DELETE_BOARD_SUCCESS,
         } = this.mediator.getEventTypes();
 
         socket.on("LOGIN", (data) => {
             const result = this._validate(data);
             if (result) {
                 this.token = result.token;
+                this.user = result;
                 this.mediator.call(LOGIN, result);
             } else {
                 this.mediator.call(SERVER_ERROR, data.error);
@@ -45,11 +47,11 @@ export default class Server {
         });
 
         socket.on("GET_FRIENDS", (data) => {
-            this.mediator.call(GET_FRIENDS, data); 
+            this.mediator.call(GET_FRIENDS, data);
         });
 
         socket.on("ADD_FRIEND_SUCCESS", (message) => {
-            this.mediator.call(ADD_FRIEND_SUCCESS, message); 
+            this.mediator.call(ADD_FRIEND_SUCCESS, message);
         });
 
         socket.on("SIGNUP", (data) => {
@@ -104,6 +106,7 @@ export default class Server {
         socket.on("SERVER_ERROR", (data) => {
             this.mediator.call(SERVER_ERROR, data);
         });
+
         socket.on("BOARD_INVITE", (data) => {
             this.mediator.call(BOARD_INVITE, data);
         });
@@ -131,11 +134,18 @@ export default class Server {
         socket.on("BOARD_UPDATE", (data) => {
             this.mediator.call(BOARD_UPDATE, data);
         });
+
+        socket.on("DELETE_BOARD_SUCCESS", (data) => {
+            this.mediator.call(DELETE_BOARD_SUCCESS, data);
+        });
     }
 
     _validate(data) {
         if (data.result === "ok") {
-            return data.data || null;
+            if (!data.data) {
+                return null;
+            }
+            return data.data;
         }
         return null;
     }
@@ -200,5 +210,9 @@ export default class Server {
 
     leaveBoardChannel(boardId) {
         this.socket.emit("LEAVE_BOARD", { boardId, token: this.token });
+    }
+
+    deleteBoard(boardId) {
+        this.socket.emit("DELETE_BOARD", { boardId, token: this.token });
     }
 }

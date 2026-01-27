@@ -10,7 +10,6 @@ const Login = ({ epages }) => {
     const passwordRef = useRef(null);
 
     const [error, setError] = useState(null);
-    console.log(error);
 
     const clickHandler = async () => {
         setError(null);
@@ -36,7 +35,6 @@ const Login = ({ epages }) => {
             epages(EPAGES.MENU);
         };
         const serverErrorHandler = (error) => {
-            console.log(error);
             setError(error);
         };
 
