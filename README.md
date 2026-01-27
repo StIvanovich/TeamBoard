@@ -18,3 +18,6 @@
 5. Укажите путь к файлу `db.sql` (server\application\modules\db\db.sql).
 6. Нажмите `Восстановить`.
 7. После завершения процесса восстановления базы данных перезапустите ваше приложение, либо перезагрузите базу данных через кнопку `Refresh...` .
+
+Отчёт по Летней практике: 
+https://docs.google.com/document/d/10wJgLWwi0m4jrfmTtV4tTlXzvPnd2K2naHKg8iBVQ4A/edit?usp=sharing
