@@ -56,7 +56,7 @@ const SignUp = ({ epages }) => {
     return (
         <div className="container-SignUp" id="test-container-SignUp">
             <div className="text-SignUp" id="test-text-SignUp">
-                Team Board
+                Простор
             </div>
             <div className="form-SignUp">
                 <div className="text-register" id="test-text-register">

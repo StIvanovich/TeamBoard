@@ -220,17 +220,12 @@ const Menu = ({ epages }) => {
         <div className="mainMenu" id="test-mainMemu">
             {currentUser && <div className="user-id-badge">Ваш ID: {currentUser.id}</div>}
 
-            <img className="photo-button" src={logo} id="test-logo" alt="Логотип" />
-
             <div className="buttons-container">
                 <div onClick={() => setIsCreateModalOpen(true)} className="button1" id="test-play">
                     Создать Доску
                 </div>
                 <div onClick={() => setIsBoardListOpen(true)} className="button2" id="test-heroes">
                     Список доступных досок
-                </div>
-                <div onClick={() => epages(EPAGES.PARAMETERS)} className="button3" id="test-settings">
-                    Параметры
                 </div>
             </div>
 
